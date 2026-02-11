@@ -29,7 +29,7 @@ export default function CourseCatalog() {
           id: 'task-7-3',
           title: '任务三 交流异步电机拆卸',
           subItems: [
-            { id: 'theory-7-3', title: '理论学习' },
+            { id: 'theory-7-3', title: '教材学习' },
             { id: 'training-7-3', title: '实训指导', isActive: true },
           ],
         },
@@ -66,7 +66,10 @@ export default function CourseCatalog() {
 
   return (
     <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-4 h-full overflow-y-auto">
-      <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">目录</h3>
+      <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center">
+        <i className="fa-solid fa-list-ul text-[var(--brand-pink)] mr-2"></i>
+        目录
+      </h3>
       
       <div className="space-y-2">
         {catalog.map((project) => (

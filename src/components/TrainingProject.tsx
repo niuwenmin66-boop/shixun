@@ -33,52 +33,60 @@ export default function TrainingProject() {
   return (
     <div className="h-full">
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {trainingProjects.map((project) => (
-          <motion.div
-            key={project.id}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] overflow-hidden cursor-default"
-          >
-            <div className="relative h-48">
-              <img 
-                src={project.image} 
-                alt={project.title} 
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white px-4 py-1 rounded-full bg-[var(--brand-pink)]/70 text-sm">
-                  即将上线
-                </span>
+      {/* 白色卡片容器 */}
+      <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-[calc(100vh-100px)] overflow-y-auto max-w-5xl mx-auto">
+        {/* 模块头部区 */}
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">5大真实操作场景 · 项目驱动式学习 · 技能实战一体化提升</h2>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {trainingProjects.map((project) => (
+            <motion.div
+              key={project.id}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] overflow-hidden cursor-default"
+            >
+              <div className="relative h-48">
+                <img 
+                  src={project.image} 
+                  alt={project.title} 
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span className="text-white px-4 py-1 rounded-full bg-[var(--brand-pink)]/70 text-sm">
+                    即将上线
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="p-4">
-              <h3 className="text-base font-medium text-[var(--text-primary)]">{project.title}</h3>
-              <div className="mt-2 flex items-center">
-                <div className="w-2 h-2 rounded-full bg-[var(--brand-pink)] mr-2"></div>
-                <span className="text-xs text-[var(--text-secondary)]">实训项目资源</span>
+              <div className="p-4">
+                <h3 className="text-base font-medium text-[var(--text-primary)]">{project.title}</h3>
+                <div className="mt-2 flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-[var(--brand-pink)] mr-2"></div>
+                  <span className="text-xs text-[var(--text-secondary)]">实训项目资源</span>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-      
-      <div className="mt-8 p-4 bg-[var(--bg-primary)] rounded-lg">
-        <h3 className="text-lg font-medium mb-2 text-[var(--text-primary)]">实训项目说明</h3>
-        <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-          <li className="flex items-start">
-            <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-            <span>实训项目模块包含了新能源汽车各系统的真实操作训练，帮助学生掌握实际操作技能。</span>
-          </li>
-          <li className="flex items-start">
-            <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-            <span>所有实训项目资源正在准备中，将根据课程进度陆续开放。</span>
-          </li>
-          <li className="flex items-start">
-            <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-            <span>实训项目需在指导教师的监督下进行，确保操作安全和规范。</span>
-          </li>
-        </ul>
+            </motion.div>
+          ))}
+        </div>
+        
+        <div className="mt-8 p-4 bg-[var(--bg-primary)] rounded-lg">
+          <h3 className="text-lg font-medium mb-2 text-[var(--text-primary)]">实训项目说明</h3>
+          <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+            <li className="flex items-start">
+              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
+              <span>实训项目模块包含了新能源汽车各系统的真实操作训练，帮助学生掌握实际操作技能。</span>
+            </li>
+            <li className="flex items-start">
+              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
+              <span>所有实训项目资源正在准备中，将根据课程进度陆续开放。</span>
+            </li>
+            <li className="flex items-start">
+              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
+              <span>实训项目需在指导教师的监督下进行，确保操作安全和规范。</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

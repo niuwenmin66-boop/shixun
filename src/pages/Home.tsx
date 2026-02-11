@@ -31,24 +31,26 @@ export default function Home() {
     switch (activeTab) {
       case 'theory':
         return (
-          <div className="flex gap-[5px] w-full h-[calc(100vh-160px)]">
-            <div className="w-64 flex-shrink-0 h-full">
-              <CourseCatalog />
-            </div>
-            <div className="flex-1 h-full">
-              <TrainingGuide onSelectText={setSelectedText} />
-            </div>
-            <div className="w-80 flex-shrink-0 h-full">
-              <AIAssistant selectedText={selectedText} />
+          <div className="h-full">
+            <div className="flex gap-[5px] w-full h-[calc(100vh-100px)] max-w-7xl mx-auto">
+              <div className="w-64 flex-shrink-0 h-full">
+                <CourseCatalog />
+              </div>
+              <div className="flex-1 h-full">
+                <TrainingGuide onSelectText={setSelectedText} />
+              </div>
+              <div className="w-80 flex-shrink-0 h-full">
+                <AIAssistant selectedText={selectedText} />
+              </div>
             </div>
           </div>
         );
       case 'simulation':
-        return <SimulationPractice />;
+        return <div className="h-full"><SimulationPractice /></div>;
       case 'training':
-        return <TrainingProject />;
+        return <div className="h-full"><TrainingProject /></div>;
       case 'certification':
-        return <Certification />;
+        return <div className="h-full"><Certification /></div>;
       default:
         return null;
     }

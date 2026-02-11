@@ -121,7 +121,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
         
         // 计算相对于容器的位置
         let x = (lastCharRect.left - containerRect.left) + (lastCharRect.width / 2) - (buttonWidth / 2);
-        let y = (lastCharRect.bottom - containerRect.top) + 15; // 下方行，增加一些间距
+        let y = (lastCharRect.bottom - containerRect.top) + containerRef.current.scrollTop + 15; // 下方行，增加一些间距，加上滚动偏移量
         
         // 边界检查，确保按钮不会被容器边框压住
         const containerWidth = containerRect.width;
@@ -135,12 +135,12 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
         }
         
         // 垂直边界检查
-        if (y + buttonHeight > containerHeight - 10) {
+        if (y + buttonHeight > containerHeight - 10 + containerRef.current.scrollTop) {
           // 如果按钮会超出容器底部，调整位置到选中区域的上方
-          y = (selectionRect.top - containerRect.top) - buttonHeight - 15;
+          y = (selectionRect.top - containerRect.top) + containerRef.current.scrollTop - buttonHeight - 15;
           // 确保按钮不会超出容器顶部
-          if (y < 10) {
-            y = 10;
+          if (y < 10 + containerRef.current.scrollTop) {
+            y = 10 + containerRef.current.scrollTop;
           }
         }
         
@@ -169,7 +169,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
   return (
     <div ref={containerRef} className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-full overflow-y-auto relative">
       {/* 标题 */}
-      <h1 className="text-2xl font-semibold mb-6 text-[var(--text-primary)] border-b border-[var(--light-pink)] pb-3">
+      <h1 className="text-lg font-semibold mb-6 text-[var(--text-primary)] border-b border-[var(--light-pink)] pb-3">
         交流异步电机拆卸实训
       </h1>
 
@@ -204,7 +204,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
           onClick={() => toggleSection('skills')}
           className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
         >
-          <span>技能点、岗位与技能认证</span>
+          <span>技能点</span>
           <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.skills ? 'transform rotate-180' : ''}`}></i>
         </button>
         
@@ -228,10 +228,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能要求：</p>
                     <p className="text-[var(--text-secondary)]">轴承底座、后端盖、线束连接器等部位必须使用对角均匀松动，防止端盖变形、受力不均、裂纹。易损件识别与处理。</p>
                   </div>
-                  <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
-                    <p className="font-medium text-[var(--text-primary)] mb-1">对应岗位：</p>
-                    <p className="text-[var(--text-secondary)]">设备维修工（电机方向）；电气运维工；电机装配与调试工</p>
-                  </div>
+
                   <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能认证：</p>
                     <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-1">
@@ -254,10 +251,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能要求：</p>
                     <p className="text-[var(--text-secondary)]">禁止硬敲硬砸，掌握轻敲四角、均匀受力的技巧。保护端盖平面、止口、轴承。</p>
                   </div>
-                  <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
-                    <p className="font-medium text-[var(--text-primary)] mb-1">对应岗位：</p>
-                    <p className="text-[var(--text-secondary)]">设备维修工（电机方向）；电机装配与调试工</p>
-                  </div>
+
                   <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能认证：</p>
                     <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-1">
@@ -280,10 +274,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能要求：</p>
                     <p className="text-[var(--text-secondary)]">吸力泵取螺栓。不同规格套筒、棘轮扳手正确匹配。不混用、不强行操作。</p>
                   </div>
-                  <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
-                    <p className="font-medium text-[var(--text-primary)] mb-1">对应岗位：</p>
-                    <p className="text-[var(--text-secondary)]">设备维修工（电机方向）；电气运维工；电机装配与调试工</p>
-                  </div>
+
                   <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能认证：</p>
                     <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-1">
@@ -306,10 +297,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能要求：</p>
                     <p className="text-[var(--text-secondary)]">先电气部件（线束、编码器）→再机械部件（轴承座、后端盖、转子挡圈）。顺序错误会导致部件损坏。</p>
                   </div>
-                  <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
-                    <p className="font-medium text-[var(--text-primary)] mb-1">对应岗位：</p>
-                    <p className="text-[var(--text-secondary)]">设备维修工（电机方向）；电气运维工；电机装配与调试工</p>
-                  </div>
+
                   <div className="bg-[var(--bg-primary)]/50 rounded-lg p-2">
                     <p className="font-medium text-[var(--text-primary)] mb-1">技能认证：</p>
                     <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-1">
@@ -344,43 +332,24 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
             className="pl-1"
           >
             <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-              <p className="text-[var(--text-primary)] leading-relaxed mb-4">
-                某新能源汽车维修车间接收了一辆需要电机检修的电动汽车。经初步检测，发现电机存在异常噪音和振动问题，技术主管决定进行电机拆卸检修。作为维修实习生，你需要在师傅的指导下，按照标准流程完成交流异步电机的拆卸工作。
-              </p>
-              <p className="text-[var(--brand-pink)] font-medium italic border-l-4 border-[var(--brand-pink)] pl-3 py-2 bg-[var(--bg-primary)]/30 rounded-r-lg mb-4">
-                这是你第一次独立操作此类任务，需要特别注意操作规范和安全要求...
-              </p>
-              <div 
-                className="relative rounded-lg overflow-hidden cursor-pointer"
-              >
-                <img 
-                  src={trainingImage} 
-                  alt="实训场景" 
-                  className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImage(trainingImage);
-                    }}
-                    className="text-white text-2xl hover:text-white/80 transition-colors"
-                  >
-                    <i className="fa-solid fa-search-plus"></i>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImageUrl(trainingImage);
-                      if (onSelectText) {
-                        onSelectText(`[图片]${trainingImage}`);
-                      }
-                    }}
-                    className="text-white text-2xl hover:text-white/80 transition-colors"
-                  >
-                    <i className="fa-solid fa-robot"></i>
-                  </button>
+              <div className="flex flex-col md:flex-row gap-6 items-center">
+                <div className="flex-1">
+                  <p className="text-[var(--text-primary)] leading-relaxed mb-4">
+                    某新能源汽车维修车间接收了一辆需要电机检修的电动汽车。经初步检测，发现电机存在异常噪音和振动问题，技术主管决定进行电机拆卸检修。作为维修实习生，你需要在师傅的指导下，按照标准流程完成交流异步电机的拆卸工作。
+                  </p>
+                  <p className="text-[var(--brand-pink)] font-medium italic border-l-4 border-[var(--brand-pink)] pl-3 py-2 bg-[var(--bg-primary)]/30 rounded-r-lg">
+                    这是你第一次独立操作此类任务，需要特别注意操作规范和安全要求...
+                  </p>
+                </div>
+                <div className="flex-1 relative rounded-lg overflow-hidden">
+                  <video 
+                    src="https://e.necibook.com/api/media/api/v1/media/showImage/2021466316601610240" 
+                    alt="实训场景" 
+                    className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                    controls
+                    muted
+                    preload="metadata"
+                  />
                 </div>
               </div>
             </div>
@@ -417,15 +386,36 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                   <div 
                     key={index} 
                     className="bg-white border border-[var(--light-pink)] rounded-lg p-2 text-center cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setSelectedImage(toolImages[index])}
                   >
                     <div className="mb-2 relative rounded overflow-hidden h-24">
                       <img 
                         src={toolImages[index]} 
                         alt={tool} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                         loading="lazy"
                       />
+                      <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedImage(toolImages[index]);
+                          }}
+                          className="text-white text-xl hover:text-white/80 transition-colors"
+                        >
+                          <i className="fa-solid fa-search-plus"></i>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onSelectText) {
+                              onSelectText(`[图片]${toolImages[index]}`);
+                            }
+                          }}
+                          className="text-white text-xl hover:text-white/80 transition-colors"
+                        >
+                          <i className="fa-solid fa-robot"></i>
+                        </button>
+                      </div>
                     </div>
                     <p className="text-sm text-[var(--text-secondary)]">{tool}</p>
                   </div>
@@ -444,15 +434,36 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                   <div 
                     key={index} 
                     className="bg-white border border-[var(--light-pink)] rounded-lg p-2 text-center cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setSelectedImage(materialImages[index])}
                   >
                     <div className="mb-2 relative rounded overflow-hidden h-24">
                       <img 
                         src={materialImages[index]} 
                         alt={material} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                         loading="lazy"
                       />
+                      <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedImage(materialImages[index]);
+                          }}
+                          className="text-white text-xl hover:text-white/80 transition-colors"
+                        >
+                          <i className="fa-solid fa-search-plus"></i>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onSelectText) {
+                              onSelectText(`[图片]${materialImages[index]}`);
+                            }
+                          }}
+                          className="text-white text-xl hover:text-white/80 transition-colors"
+                        >
+                          <i className="fa-solid fa-robot"></i>
+                        </button>
+                      </div>
                     </div>
                     <p className="text-sm text-[var(--text-secondary)]">{material}</p>
                   </div>
@@ -463,110 +474,36 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
               </p>
             </div>
 
-            {/* 工位整理和安全提示 */}
-            <div className="flex gap-4">
+            {/* 工位整理、安全提示和实训时长 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* 工位整理 */}
-              <div className="flex-1 flex flex-col">
-                <div>
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <i className="fa-solid fa-screwdriver-wrench text-[var(--brand-pink)] mr-2"></i>
-                    工位整理
-                  </h4>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    清理实训台面，划分部件摆放区域，避免拆卸后部件丢失、混用。
-                  </p>
-                </div>
-                <div className="mt-3 flex-grow">
-                  <div 
-                    className="relative rounded-lg overflow-hidden cursor-pointer h-full"
-                  >
-                    <img 
-                      src={workplaceImage} 
-                      alt="工位整理" 
-                      className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImage(workplaceImage);
-                        }}
-                        className="text-white text-2xl hover:text-white/80 transition-colors"
-                      >
-                        <i className="fa-solid fa-search-plus"></i>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImageUrl(workplaceImage);
-                          if (onSelectText) {
-                            onSelectText(`[图片]${workplaceImage}`);
-                          }
-                        }}
-                        className="text-white text-2xl hover:text-white/80 transition-colors"
-                      >
-                        <i className="fa-solid fa-robot"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
+                <h4 className="font-medium mb-3 flex items-center">
+                  <i className="fa-solid fa-screwdriver-wrench text-[var(--brand-pink)] mr-2"></i>
+                  工位整理
+                </h4>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  清理实训台面，划分部件摆放区域，避免拆卸后部件丢失、混用。
+                </p>
               </div>
 
               {/* 安全提示 */}
-              <div className="flex-1 flex flex-col">
-                <div>
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <i className="fa-solid fa-shield-alt text-[var(--brand-pink)] mr-2"></i>
-                    安全提示
-                  </h4>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    穿戴好实训防护用品，明确禁止野蛮操作。
-                  </p>
-                </div>
-                <div className="mt-3 flex-grow">
-                  <div 
-                    className="relative rounded-lg overflow-hidden cursor-pointer h-full"
-                  >
-                    <img 
-                      src={safetyImage} 
-                      alt="安全提示" 
-                      className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImage(safetyImage);
-                        }}
-                        className="text-white text-2xl hover:text-white/80 transition-colors"
-                      >
-                        <i className="fa-solid fa-search-plus"></i>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImageUrl(safetyImage);
-                          if (onSelectText) {
-                            onSelectText(`[图片]${safetyImage}`);
-                          }
-                        }}
-                        className="text-white text-2xl hover:text-white/80 transition-colors"
-                      >
-                        <i className="fa-solid fa-robot"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
+                <h4 className="font-medium mb-3 flex items-center">
+                  <i className="fa-solid fa-shield-alt text-[var(--brand-pink)] mr-2"></i>
+                  安全提示
+                </h4>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  穿戴好实训防护用品，明确禁止野蛮操作。
+                </p>
               </div>
-            </div>
 
-            {/* 实训时长 */}
-            <div className="bg-[var(--bg-primary)] rounded-lg p-4 flex items-center">
-              <i className="fa-solid fa-clock text-[var(--brand-pink)] text-xl mr-3"></i>
-              <div>
-                <p className="font-medium">实训时长</p>
+              {/* 实训时长 */}
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
+                <h4 className="font-medium mb-3 flex items-center">
+                  <i className="fa-solid fa-clock text-[var(--brand-pink)] mr-2"></i>
+                  实训时长
+                </h4>
                 <p className="text-sm text-[var(--text-secondary)]">90分钟</p>
               </div>
             </div>
@@ -592,6 +529,15 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
+            {/* 实操步骤图片 */}
+            <div className="mb-6">
+              <img 
+                src="https://e.necibook.com/api/media/api/v1/media/showImage/2021490180977266688" 
+                alt="实操步骤" 
+                className="w-full h-auto rounded-lg object-cover"
+              />
+            </div>
+            
             {/* 步骤一 */}
             <div className="mb-6">
               <h3 className="text-xl font-medium mb-4 text-[var(--text-primary)] bg-[var(--bg-primary)] px-4 py-2 rounded-lg">
@@ -602,43 +548,47 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 {/* 子步骤1 */}
                 <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
                   <h4 className="font-medium mb-3 text-[var(--text-primary)]">① 拆卸三相线束连接器固定螺母</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、中号短接杆、13号六角套筒。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">用上述工具松开三相线束连接器固定螺母，依次取下螺母、弹性垫圈和垫片。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">明确弹性垫圈和垫片不可重复使用，做好标记，提醒后续安装时更换新品。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--text-secondary)]">基础技能（工具匹配、部件有序拆卸）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                  >
-                    <img 
-                      src={stepImages[0]} 
-                      alt="拆卸三相线束连接器固定螺母" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImage(stepImages[0]);
-                        }}
-                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer"
                       >
-                        <i className="fa-solid fa-search-plus"></i>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImageUrl(stepImages[0]);
-                          if (onSelectText) {
-                            onSelectText(`[图片]${stepImages[0]}`);
-                          }
-                        }}
-                        className="text-white text-2xl hover:text-white/80 transition-colors"
-                      >
-                        <i className="fa-solid fa-robot"></i>
-                      </button>
+                        <img 
+                          src="https://e.necibook.com/api/media/api/v1/media/showImage/2021476739061174272" 
+                          alt="拆卸三相线束连接器固定螺母" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage("https://e.necibook.com/api/media/api/v1/media/showImage/2021476739061174272");
+                            }}
+                            className="text-white text-2xl hover:text-white/80 transition-colors"
+                          >
+                            <i className="fa-solid fa-search-plus"></i>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImageUrl("https://e.necibook.com/api/media/api/v1/media/showImage/2021476739061174272");
+                              if (onSelectText) {
+                                onSelectText(`[图片]https://e.necibook.com/api/media/api/v1/media/showImage/2021476739061174272`);
+                              }
+                            }}
+                            className="text-white text-2xl hover:text-white/80 transition-colors"
+                          >
+                            <i className="fa-solid fa-robot"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2 space-y-2 text-sm">
+                      <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、中号短接杆、13号六角套筒。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">用上述工具松开三相线束连接器固定螺母，依次取下螺母、弹性垫圈和垫片。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">明确弹性垫圈和垫片不可重复使用，做好标记，提醒后续安装时更换新品。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--text-secondary)]">基础技能（工具匹配、部件有序拆卸）</span></p>
                     </div>
                   </div>
                 </div>
@@ -646,23 +596,27 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 {/* 子步骤2 */}
                 <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
                   <h4 className="font-medium mb-3 text-[var(--text-primary)]">② 取下三相线束接头及相关部件</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">分别取下三相线束接头和下端垫片，将取下的部件按类别摆放在指定区域，做好区分标记。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">避免线束拉扯、弯折，防止线束绝缘层破损。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--text-secondary)]">基础技能（部件规范摆放、线束保护）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[1])}
-                  >
-                    <img 
-                      src={stepImages[1]} 
-                      alt="取下三相线束接头及相关部件" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                    <div className="md:w-1/2 space-y-2 text-sm">
+                      <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">分别取下三相线束接头和下端垫片，将取下的部件按类别摆放在指定区域，做好区分标记。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">避免线束拉扯、弯折，防止线束绝缘层破损。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--text-secondary)]">基础技能（部件规范摆放、线束保护）</span></p>
+                    </div>
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => setSelectedImage(stepImages[1])}
+                      >
+                        <img 
+                          src={stepImages[1]} 
+                          alt="取下三相线束接头及相关部件" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -670,24 +624,28 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 {/* 子步骤3 */}
                 <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
                   <h4 className="font-medium mb-3 text-[var(--text-primary)]">③ 松开并取出三相交流线束连接器固定螺栓</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、HW4长套筒。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">采用对角交叉的方式，均匀松开三相交流线束连接器固定螺栓，松开后取出螺栓及垫片。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">对角交叉松开时，力度均匀，避免螺栓滑丝、螺纹损坏。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--warning-orange)] font-medium">★关键技能（对角交叉拆卸螺栓方法，防止部件受力不均）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[2])}
-                  >
-                    <img 
-                      src={stepImages[2]} 
-                      alt="松开并取出三相交流线束连接器固定螺栓" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => setSelectedImage(stepImages[2])}
+                      >
+                        <img 
+                          src={stepImages[2]} 
+                          alt="松开并取出三相交流线束连接器固定螺栓" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2 space-y-2 text-sm">
+                      <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、HW4长套筒。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">采用对角交叉的方式，均匀松开三相交流线束连接器固定螺栓，松开后取出螺栓及垫片。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">对角交叉松开时，力度均匀，避免螺栓滑丝、螺纹损坏。</span></p>
+                      <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--warning-orange)] font-medium">★关键技能（对角交叉拆卸螺栓方法，防止部件受力不均）</span></p>
                     </div>
                   </div>
                 </div>
@@ -704,51 +662,99 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
               
               <div className="space-y-6 ml-4">
                 {/* 子步骤1 */}
-                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
-                  <h4 className="font-medium mb-3 text-[var(--text-primary)]">① 拆卸电机速度编码器盖板</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、中号短接杆、PDR套筒。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">用上述工具松开电机速度编码器盖板固定螺栓，依次取下螺栓和盖板。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">取下盖板时，轻拿轻放，避免盖板变形，防止灰尘进入编码器内部。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--text-secondary)]">基础技能（盖板无损拆卸、精密部件防尘保护）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[4])}
-                  >
-                    <img 
-                      src={stepImages[4]} 
-                      alt="拆卸电机速度编码器盖板" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <h4 className="font-medium mb-4 text-[var(--text-primary)] text-lg">① 拆卸电机速度编码器盖板</h4>
+                  <div className="flex flex-col md:flex-row gap-5 items-start">
+                    <div className="md:w-1/2 space-y-3 text-sm">
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">工具选用：</p>
+                        <p className="text-[var(--text-secondary)]">中号棘轮扳手、中号短接杆、PDR套筒。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">操作要点：</p>
+                        <p className="text-[var(--text-secondary)]">用上述工具松开电机速度编码器盖板固定螺栓，依次取下螺栓和盖板。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">注意事项：</p>
+                        <p className="text-[var(--text-secondary)]">取下盖板时，轻拿轻放，避免盖板变形，防止灰尘进入编码器内部。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">技能标注：</p>
+                        <p className="text-[var(--text-secondary)]">基础技能（盖板无损拆卸、精密部件防尘保护）</p>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer shadow-sm"
+                        onClick={() => setSelectedImage(stepImages[4])}
+                      >
+                        <img 
+                          src={stepImages[4]} 
+                          alt="拆卸电机速度编码器盖板" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity rounded-lg"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage(stepImages[4]);
+                            }}
+                          >
+                            <i className="fa-solid fa-search-plus text-xl"></i>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* 子步骤2 */}
-                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
-                  <h4 className="font-medium mb-3 text-[var(--text-primary)]">② 拆卸电机速度编码器</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、HW4长套筒。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">用工具松开电机速度编码器固定螺栓，取出螺栓和左右两侧固定片，随后平稳取下电机速度编码器。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">拆卸过程中，不磕碰、不硬撬编码器，避免编码器内部元件损坏；固定片做好摆放标记，防止混淆。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--warning-orange)] font-medium">★关键技能（编码器无损拆卸，精密部件保护技巧）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[5])}
-                  >
-                    <img 
-                      src={stepImages[5]} 
-                      alt="拆卸电机速度编码器" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <h4 className="font-medium mb-4 text-[var(--text-primary)] text-lg">② 拆卸电机速度编码器</h4>
+                  <div className="flex flex-col md:flex-row gap-5 items-start">
+                    <div className="md:w-1/2 space-y-3 text-sm">
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">工具选用：</p>
+                        <p className="text-[var(--text-secondary)]">中号棘轮扳手、HW4长套筒。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">操作要点：</p>
+                        <p className="text-[var(--text-secondary)]">用工具松开电机速度编码器固定螺栓，取出螺栓和左右两侧固定片，随后平稳取下电机速度编码器。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">注意事项：</p>
+                        <p className="text-[var(--text-secondary)]">拆卸过程中，不磕碰、不硬撬编码器，避免编码器内部元件损坏；固定片做好摆放标记，防止混淆。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">技能标注：</p>
+                        <p className="text-[var(--warning-orange)] font-medium">★关键技能（编码器无损拆卸，精密部件保护技巧）</p>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer shadow-sm"
+                        onClick={() => setSelectedImage(stepImages[5])}
+                      >
+                        <img 
+                          src={stepImages[5]} 
+                          alt="拆卸电机速度编码器" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity rounded-lg"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage(stepImages[5]);
+                            }}
+                          >
+                            <i className="fa-solid fa-search-plus text-xl"></i>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -763,76 +769,148 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
               
               <div className="space-y-6 ml-4">
                 {/* 子步骤1 */}
-                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
-                  <h4 className="font-medium mb-3 text-[var(--text-primary)]">① 拆卸轴承底座固定螺栓</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、HW4长套筒、吸力泵。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">采用对角交叉的方式，均匀松开轴承底座固定螺栓，松开后用吸力泵取出螺栓。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">吸力泵使用规范，确保螺栓完全吸附后再取出，避免螺栓掉落损坏电机部件；对角交叉松开时力度均匀。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--warning-orange)] font-medium">★关键技能（对角交叉拆卸方法、吸力泵规范使用）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[6])}
-                  >
-                    <img 
-                      src={stepImages[6]} 
-                      alt="拆卸轴承底座固定螺栓" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <h4 className="font-medium mb-4 text-[var(--text-primary)] text-lg">① 拆卸轴承底座固定螺栓</h4>
+                  <div className="flex flex-col md:flex-row gap-5 items-start">
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer shadow-sm h-48"
+                        onClick={() => setSelectedImage(stepImages[6])}
+                      >
+                        <img 
+                          src={stepImages[6]} 
+                          alt="拆卸轴承底座固定螺栓" 
+                          className="w-full h-full object-cover hover:opacity-90 transition-opacity rounded-lg"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage(stepImages[6]);
+                            }}
+                          >
+                            <i className="fa-solid fa-search-plus text-xl"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2 space-y-3 text-sm">
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">工具选用：</p>
+                        <p className="text-[var(--text-secondary)]">中号棘轮扳手、HW4长套筒、吸力泵。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">操作要点：</p>
+                        <p className="text-[var(--text-secondary)]">采用对角交叉的方式，均匀松开轴承底座固定螺栓，松开后用吸力泵取出螺栓。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">注意事项：</p>
+                        <p className="text-[var(--text-secondary)]">吸力泵使用规范，确保螺栓完全吸附后再取出，避免螺栓掉落损坏电机部件；对角交叉松开时力度均匀。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">技能标注：</p>
+                        <p className="text-[var(--warning-orange)] font-medium">★关键技能（对角交叉拆卸方法、吸力泵规范使用）</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* 子步骤2 */}
-                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
-                  <h4 className="font-medium mb-3 text-[var(--text-primary)]">② 松开后端盖固定螺栓</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">中号棘轮扳手、HW6长套筒。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">采用对角交叉的方式，均匀松开后端盖固定螺栓，松开后取出所有螺栓，按顺序摆放。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">螺栓取出后做好标记，避免后续安装时混淆；力度均匀，防止后端盖受力不均产生变形、裂纹。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--warning-orange)] font-medium">★关键技能（对角交叉拆卸螺栓，后端盖受力保护）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[7])}
-                  >
-                    <img 
-                      src={stepImages[7]} 
-                      alt="松开后端盖固定螺栓" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <h4 className="font-medium mb-4 text-[var(--text-primary)] text-lg">② 松开后端盖固定螺栓</h4>
+                  <div className="flex flex-col md:flex-row gap-5 items-start">
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer shadow-sm"
+                        onClick={() => setSelectedImage(stepImages[7])}
+                      >
+                        <img 
+                          src={stepImages[7]} 
+                          alt="松开后端盖固定螺栓" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity rounded-lg"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage(stepImages[7]);
+                            }}
+                          >
+                            <i className="fa-solid fa-search-plus text-xl"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2 space-y-3 text-sm">
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">工具选用：</p>
+                        <p className="text-[var(--text-secondary)]">中号棘轮扳手、HW6长套筒。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">操作要点：</p>
+                        <p className="text-[var(--text-secondary)]">采用对角交叉的方式，均匀松开后端盖固定螺栓，松开后取出所有螺栓，按顺序摆放。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">注意事项：</p>
+                        <p className="text-[var(--text-secondary)]">螺栓取出后做好标记，避免后续安装时混淆；力度均匀，防止后端盖受力不均产生变形、裂纹。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">技能标注：</p>
+                        <p className="text-[var(--warning-orange)] font-medium">★关键技能（对角交叉拆卸螺栓，后端盖受力保护）</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* 子步骤3 */}
-                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4">
-                  <h4 className="font-medium mb-3 text-[var(--text-primary)]">③ 取出后端盖</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong className="text-[var(--text-primary)]">工具选用：</strong> <span className="text-[var(--text-secondary)]">橡胶锤。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">操作要点：</strong> <span className="text-[var(--text-secondary)]">用橡胶锤轻轻敲击后端盖四个端角，敲击力度均匀、轻柔，待后端盖松动后，移出三相线柱，平稳取出后端盖。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">注意事项：</strong> <span className="text-[var(--text-secondary)]">禁止用金属锤硬砸后端盖，避免端盖变形、破损；移出三相线柱时，避免拉扯线束。</span></p>
-                    <p><strong className="text-[var(--text-primary)]">技能标注：</strong> <span className="text-[var(--warning-orange)] font-medium">★关键技能（橡胶锤规范使用，后端盖无损拆卸技巧）</span></p>
-                  </div>
-                  <div 
-                    className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[8])}
-                  >
-                    <img 
-                      src={stepImages[8]} 
-                      alt="取出后端盖" 
-                      className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                <div className="bg-white border border-[var(--light-pink)] rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <h4 className="font-medium mb-4 text-[var(--text-primary)] text-lg">③ 取出后端盖</h4>
+                  <div className="flex flex-col md:flex-row gap-5 items-start">
+                    <div className="md:w-1/2">
+                      <div 
+                        className="relative rounded-lg overflow-hidden cursor-pointer shadow-sm"
+                        onClick={() => setSelectedImage(stepImages[8])}
+                      >
+                        <img 
+                          src={stepImages[8]} 
+                          alt="取出后端盖" 
+                          className="w-full h-auto object-cover hover:opacity-90 transition-opacity rounded-lg"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage(stepImages[8]);
+                            }}
+                          >
+                            <i className="fa-solid fa-search-plus text-xl"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="md:w-1/2 space-y-3 text-sm">
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">工具选用：</p>
+                        <p className="text-[var(--text-secondary)]">橡胶锤。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">操作要点：</p>
+                        <p className="text-[var(--text-secondary)]">用橡胶锤轻轻敲击后端盖四个端角，敲击力度均匀、轻柔，待后端盖松动后，移出三相线柱，平稳取出后端盖。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">注意事项：</p>
+                        <p className="text-[var(--text-secondary)]">禁止用金属锤硬砸后端盖，避免端盖变形、破损；移出三相线柱时，避免拉扯线束。</p>
+                      </div>
+                      <div className="bg-[var(--bg-primary)]/30 rounded-lg p-3">
+                        <p className="font-medium text-[var(--text-primary)] mb-1">技能标注：</p>
+                        <p className="text-[var(--warning-orange)] font-medium">★关键技能（橡胶锤规范使用，后端盖无损拆卸技巧）</p>
+                      </div>
                     </div>
                   </div>
                 </div>

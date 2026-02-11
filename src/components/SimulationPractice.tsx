@@ -141,144 +141,147 @@ export default function SimulationPractice() {
 
   return (
     <div className="h-full">
-      {/* 模块头部区 */}
-      <div className="mb-8 text-center">
-        <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">5大核心实训场景 · 沉浸式3D交互 · 理虚一体化训练</h2>
-        <div className="bg-[var(--bg-primary)] px-4 py-2 rounded-lg inline-block mx-auto mt-4">
-          <span className="text-[var(--text-primary)]">已完成 2/5 个资源</span>
+      {/* 白色卡片容器 */}
+      <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-[calc(100vh-100px)] overflow-y-auto max-w-5xl mx-auto">
+        {/* 模块头部区 */}
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">5大核心实训场景 · 沉浸式3D交互 · 理虚一体化训练</h2>
+          <div className="bg-[var(--bg-primary)] px-4 py-2 rounded-lg inline-block mx-auto mt-4">
+            <span className="text-[var(--text-primary)]">已完成 2/5 个资源</span>
+          </div>
         </div>
-      </div>
 
-      {/* 资源卡片网格区 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {simulationResources.map((resource) => (
-          <motion.div
-            key={resource.id}
-            whileHover={{
-              scale: 1.02,
-              boxShadow: '0 12px 32px rgba(255,143,163,0.16)'
-            }}
-            whileTap={{ scale: 0.98 }}
-            className={`bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] overflow-hidden cursor-${resource.isClickable ? 'pointer' : 'default'}`}
-            onClick={() => handleResourceClick(resource)}
-          >
-            {/* 资源封面图 */}
-            <div className="relative h-48">
-              <motion.img 
-                src={resource.image} 
-                alt={resource.title} 
-                className="w-full h-full object-cover"
-                loading="lazy"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-              />
-              {/* 系统分类角标 */}
-              <div className="absolute top-3 left-3">
-                <span className="bg-[var(--brand-pink)] text-white px-3 py-1 rounded-full text-xs font-medium">
-                  {resource.tags[0]}
-                </span>
+        {/* 资源卡片网格区 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {simulationResources.map((resource) => (
+            <motion.div
+              key={resource.id}
+              whileHover={{
+                scale: 1.02,
+                boxShadow: '0 12px 32px rgba(255,143,163,0.16)'
+              }}
+              whileTap={{ scale: 0.98 }}
+              className={`bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] overflow-hidden cursor-${resource.isClickable ? 'pointer' : 'default'}`}
+              onClick={() => handleResourceClick(resource)}
+            >
+              {/* 资源封面图 */}
+              <div className="relative h-48">
+                <motion.img 
+                  src={resource.image} 
+                  alt={resource.title} 
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                />
+                {/* 系统分类角标 */}
+                <div className="absolute top-3 left-3">
+                  <span className="bg-[var(--brand-pink)] text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {resource.tags[0]}
+                  </span>
+                </div>
+                {/* 悬停遮罩和按钮 */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-4"
+                >
+                  <div className="flex space-x-3 justify-center">
+                    <button
+                      onClick={(e) => handlePreviewClick(e, resource)}
+                      className="bg-white/90 text-[var(--text-primary)] px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition-colors flex items-center justify-center"
+                    >
+                      <i className="fa-solid fa-eye mr-1"></i>
+                      预览
+                    </button>
+                  </div>
+                </motion.div>
               </div>
-              {/* 悬停遮罩和按钮 */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-4"
-              >
-                <div className="flex space-x-3 justify-center">
+
+              {/* 卡片内容 */}
+              <div className="p-4">
+                {/* 标签组 */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {resource.tags.map((tag, index) => (
+                    <span key={index} className="text-xs px-2 py-1 bg-[var(--bg-primary)] text-[var(--text-secondary)] rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* 标题和副标题 */}
+                <h3 className="text-base font-medium text-[var(--text-primary)] mb-1 line-clamp-2">
+                  {resource.title}
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] mb-3">
+                  {resource.subtitle}
+                </p>
+
+                {/* 难度等级和学时 */}
+                <div className="flex items-center mb-3 text-sm">
+                  <span className="text-[var(--text-primary)]">{resource.difficulty} {resource.difficultyLevel}</span>
+                  <span className="mx-2 text-[var(--text-secondary)]">|</span>
+                  <span className="text-[var(--text-secondary)]">建议{resource.duration}</span>
+                </div>
+
+                {/* 资源简介 */}
+                <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-3">
+                  {resource.description}
+                </p>
+
+                {/* 学习目标 */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-[var(--text-primary)] mb-2">学习目标：</h4>
+                  <ul className="text-xs text-[var(--text-secondary)] space-y-1">
+                    {resource.learningGoals.map((goal, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="mr-2">·</span>
+                        <span>{goal}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* 状态标识和主按钮 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs px-2 py-1 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)]">
+                    {resource.status}
+                  </span>
                   <button
-                    onClick={(e) => handlePreviewClick(e, resource)}
-                    className="bg-white/90 text-[var(--text-primary)] px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition-colors flex items-center justify-center"
+                    onClick={(e) => handleStartClick(e, resource)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      resource.isClickable 
+                        ? 'bg-[var(--brand-pink)] text-white hover:bg-[var(--brand-pink)]/90'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    disabled={!resource.isClickable}
                   >
-                    <i className="fa-solid fa-eye mr-1"></i>
-                    预览
+                    开始实验
                   </button>
                 </div>
-              </motion.div>
-            </div>
-
-            {/* 卡片内容 */}
-            <div className="p-4">
-              {/* 标签组 */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {resource.tags.map((tag, index) => (
-                  <span key={index} className="text-xs px-2 py-1 bg-[var(--bg-primary)] text-[var(--text-secondary)] rounded-full">
-                    {tag}
-                  </span>
-                ))}
               </div>
-
-              {/* 标题和副标题 */}
-              <h3 className="text-base font-medium text-[var(--text-primary)] mb-1 line-clamp-2">
-                {resource.title}
-              </h3>
-              <p className="text-xs text-[var(--text-secondary)] mb-3">
-                {resource.subtitle}
-              </p>
-
-              {/* 难度等级和学时 */}
-              <div className="flex items-center mb-3 text-sm">
-                <span className="text-[var(--text-primary)]">{resource.difficulty} {resource.difficultyLevel}</span>
-                <span className="mx-2 text-[var(--text-secondary)]">|</span>
-                <span className="text-[var(--text-secondary)]">建议{resource.duration}</span>
-              </div>
-
-              {/* 资源简介 */}
-              <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-3">
-                {resource.description}
-              </p>
-
-              {/* 学习目标 */}
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-[var(--text-primary)] mb-2">学习目标：</h4>
-                <ul className="text-xs text-[var(--text-secondary)] space-y-1">
-                  {resource.learningGoals.map((goal, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="mr-2">·</span>
-                      <span>{goal}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 状态标识和主按钮 */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs px-2 py-1 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)]">
-                  {resource.status}
-                </span>
-                <button
-                  onClick={(e) => handleStartClick(e, resource)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    resource.isClickable 
-                      ? 'bg-[var(--brand-pink)] text-white hover:bg-[var(--brand-pink)]/90'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                  disabled={!resource.isClickable}
-                >
-                  开始实验
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-      
-      {/* 使用说明 */}
-      <div className="mt-8 p-4 bg-[var(--bg-primary)] rounded-lg">
-        <h3 className="text-lg font-medium mb-2 text-[var(--text-primary)]">使用说明</h3>
-        <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-          <li className="flex items-start">
-            <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-            <span>虚拟演练模块提供了新能源汽车各系统的交互式3D模拟操作，帮助学生在虚拟环境中熟悉操作流程。</span>
-          </li>
-          <li className="flex items-start">
-            <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-            <span>所有虚仿资源均已开放，点击"开始实验"按钮进入对应资源页面。</span>
-          </li>
-          <li className="flex items-start">
-            <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-            <span>建议使用Chrome、Firefox等现代浏览器，并确保网络连接稳定。</span>
-          </li>
-        </ul>
+            </motion.div>
+          ))}
+        </div>
+        
+        {/* 使用说明 */}
+        <div className="mt-8 p-4 bg-[var(--bg-primary)] rounded-lg">
+          <h3 className="text-lg font-medium mb-2 text-[var(--text-primary)]">使用说明</h3>
+          <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+            <li className="flex items-start">
+              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
+              <span>虚拟演练模块提供了新能源汽车各系统的交互式3D模拟操作，帮助学生在虚拟环境中熟悉操作流程。</span>
+            </li>
+            <li className="flex items-start">
+              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
+              <span>所有虚仿资源均已开放，点击"开始实验"按钮进入对应资源页面。</span>
+            </li>
+            <li className="flex items-start">
+              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
+              <span>建议使用Chrome、Firefox等现代浏览器，并确保网络连接稳定。</span>
+            </li>
+          </ul>
+        </div>
       </div>
 
       {/* 视频播放弹窗 */}

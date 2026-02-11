@@ -196,339 +196,334 @@ export default function Certification() {
   };
   
   return (
-    <div className="h-full flex flex-col items-center justify-start p-4 overflow-y-auto">
-      {/* 头部 */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center max-w-3xl mb-8"
-      >
-        <h2 className="text-2xl font-semibold mb-3 text-[var(--text-primary)]">技能认证</h2>
-        <p className="text-[var(--text-secondary)] mb-6">
-          新能源汽车行业相关技能认证，助力职业发展
-        </p>
-      </motion.div>
+    <div className="h-full">
+      {/* 白色卡片容器 */}
+      <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-[calc(100vh-100px)] overflow-y-auto max-w-5xl mx-auto">
+        {/* 模块头部区 */}
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">全谱系权威认证体系 · 职业发展路径规划 · 技能价值一体化赋能</h2>
+        </div>
 
-      {/* 左右布局 */}
-      <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8">
-        {/* 左侧：证书分类 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex-1 space-y-6"
-        >
-          {/* 国家强制准入类证书 */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+        {/* 左右布局 */}
+        <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+          {/* 左侧：证书分类 */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex-1 space-y-6"
           >
-            <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
-              <i className="fa-solid fa-shield-halved text-[var(--brand-pink)] mr-2"></i>
-              国家强制准入类证书
-            </h3>
-            <div className="space-y-4">
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('low-voltage-electrician')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 特种作业操作证（低压电工）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
+            {/* 国家强制准入类证书 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
+                <i className="fa-solid fa-shield-halved text-[var(--brand-pink)] mr-2"></i>
+                国家强制准入类证书
+              </h3>
+              <div className="space-y-4">
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('low-voltage-electrician')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 特种作业操作证（低压电工）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    应急管理部颁发，全国通用、3年复审、6年换证，是新能源汽车维修法定上岗资质
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  应急管理部颁发，全国通用、3年复审、6年换证，是新能源汽车维修法定上岗资质
-                </p>
-              </div>
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('high-voltage-electrician')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 特种作业操作证（高压电工）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('high-voltage-electrician')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 特种作业操作证（高压电工）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    应急管理部颁发，适用于1kV及以上高压电气作业，新能源汽车高压系统研发、试制、大型充换电站运维必备
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  应急管理部颁发，适用于1kV及以上高压电气作业，新能源汽车高压系统研发、试制、大型充换电站运维必备
-                </p>
               </div>
-            </div>
-          </motion.section>
+            </motion.section>
 
-          {/* 国家职业技能等级类证书 */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
-          >
-            <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
-              <i className="fa-solid fa-award text-[var(--brand-pink)] mr-2"></i>
-              国家职业技能等级类证书
-            </h3>
-            <div className="space-y-4">
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('new-energy-auto-mechanic')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 新能源汽车维修工（五级-一级）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
+            {/* 国家职业技能等级类证书 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
+                <i className="fa-solid fa-award text-[var(--brand-pink)] mr-2"></i>
+                国家职业技能等级类证书
+              </h3>
+              <div className="space-y-4">
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('new-energy-auto-mechanic')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 新能源汽车维修工（五级-一级）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    人社部备案，第三方评价机构颁发，分初级（五级）、中级（四级）、高级（三级）、技师（二级）、高级技师（一级）
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  人社部备案，第三方评价机构颁发，分初级（五级）、中级（四级）、高级（三级）、技师（二级）、高级技师（一级）
-                </p>
-              </div>
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('auto-mechanic-electrician')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 汽车维修工（电工方向，五级-一级）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('auto-mechanic-electrician')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 汽车维修工（电工方向，五级-一级）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    人社部认证，侧重汽车电气系统维修，覆盖传统车与新能源车电路、电控系统
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  人社部认证，侧重汽车电气系统维修，覆盖传统车与新能源车电路、电控系统
-                </p>
               </div>
-            </div>
-          </motion.section>
+            </motion.section>
 
-          {/* 行业专项能力类证书 */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {/* 行业专项能力类证书 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
+                <i className="fa-solid fa-screwdriver-wrench text-[var(--brand-pink)] mr-2"></i>
+                行业专项能力类证书
+              </h3>
+              <div className="space-y-4">
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('transport-certificate')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 新能源汽车检测与维修专业能力评价证书（交通运输部）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    交通运输部职业资格中心颁发，全国通用、终身有效、无需年审，分四大模块
+                  </p>
+                </div>
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('battery-maintenance')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 动力电池维修专项证书</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    聚焦新能源汽车核心部件——动力电池的检测、维护、维修与回收
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* 1+X职业教育类证书 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
+                <i className="fa-solid fa-graduation-cap text-[var(--brand-pink)] mr-2"></i>
+                1+X职业教育类证书
+              </h3>
+              <div className="space-y-4">
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('intelligent-new-energy')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 智能新能源汽车职业技能等级证书（中车行，1+X）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    教育部1+X证书制度试点，北京中车行高新技术有限公司评价，分初/中/高级
+                  </p>
+                </div>
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('power-drive')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 新能源汽车动力驱动证书（1+X专项）</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    聚焦动力驱动系统，涵盖电机、电池、电控、传动系统
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* 厂商专项认证类证书 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
+                <i className="fa-solid fa-building text-[var(--brand-pink)] mr-2"></i>
+                厂商专项认证类证书
+              </h3>
+              <div className="space-y-4">
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('byd-certification')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 比亚迪新能源汽车维修技术认证</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    比亚迪官方认证，分基础、中级、高级，掌握比亚迪三电系统、刀片电池、DiPilot等核心技术
+                  </p>
+                </div>
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('tesla-certification')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 特斯拉新能源汽车维修资质认证</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    特斯拉官方认证，掌握特斯拉高压系统、电池包、电机、Autopilot等技术
+                  </p>
+                </div>
+                <div 
+                  className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
+                  onClick={() => openCertificateModal('other-manufacturer')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">3. 其他主流厂商认证</h4>
+                    <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
+                      查看详情
+                    </button>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
+                    蔚来/小鹏/理想、大众/宝马/奔驰、宁德时代/比亚迪电池等厂商认证
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+
+          {/* 右侧：推荐考证路径 */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
+            className="w-full lg:w-80 shrink-0"
           >
-            <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
-              <i className="fa-solid fa-screwdriver-wrench text-[var(--brand-pink)] mr-2"></i>
-              行业专项能力类证书
-            </h3>
-            <div className="space-y-4">
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('transport-certificate')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 新能源汽车检测与维修专业能力评价证书（交通运输部）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  交通运输部职业资格中心颁发，全国通用、终身有效、无需年审，分四大模块
-                </p>
-              </div>
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('battery-maintenance')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 动力电池维修专项证书</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  聚焦新能源汽车核心部件——动力电池的检测、维护、维修与回收
-                </p>
-              </div>
-            </div>
-          </motion.section>
-
-          {/* 1+X职业教育类证书 */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
-          >
-            <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
-              <i className="fa-solid fa-graduation-cap text-[var(--brand-pink)] mr-2"></i>
-              1+X职业教育类证书
-            </h3>
-            <div className="space-y-4">
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('intelligent-new-energy')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 智能新能源汽车职业技能等级证书（中车行，1+X）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  教育部1+X证书制度试点，北京中车行高新技术有限公司评价，分初/中/高级
-                </p>
-              </div>
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('power-drive')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 新能源汽车动力驱动证书（1+X专项）</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  聚焦动力驱动系统，涵盖电机、电池、电控、传动系统
-                </p>
-              </div>
-            </div>
-          </motion.section>
-
-          {/* 厂商专项认证类证书 */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6"
-          >
-            <h3 className="text-xl font-semibold mb-4 text-[var(--text-primary)] flex items-center">
-              <i className="fa-solid fa-building text-[var(--brand-pink)] mr-2"></i>
-              厂商专项认证类证书
-            </h3>
-            <div className="space-y-4">
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('byd-certification')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">1. 比亚迪新能源汽车维修技术认证</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  比亚迪官方认证，分基础、中级、高级，掌握比亚迪三电系统、刀片电池、DiPilot等核心技术
-                </p>
-              </div>
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('tesla-certification')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">2. 特斯拉新能源汽车维修资质认证</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  特斯拉官方认证，掌握特斯拉高压系统、电池包、电机、Autopilot等技术
-                </p>
-              </div>
-              <div 
-                className="bg-[var(--bg-primary)] rounded-lg p-4 cursor-pointer hover:bg-[var(--light-pink)]/30 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]"
-                onClick={() => openCertificateModal('other-manufacturer')}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[var(--text-primary)] transition-colors duration-300">3. 其他主流厂商认证</h4>
-                  <button className="px-4 py-1 bg-[var(--brand-pink)] text-white rounded-full text-sm hover:bg-[var(--brand-pink)]/90 transition-all duration-300 hover:scale-105">
-                    查看详情
-                  </button>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)] transition-colors duration-300">
-                  蔚来/小鹏/理想、大众/宝马/奔驰、宁德时代/比亚迪电池等厂商认证
-                </p>
-              </div>
-            </div>
-          </motion.section>
-        </motion.div>
-
-        {/* 右侧：推荐考证路径 */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="w-full lg:w-80 shrink-0"
-        >
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 sticky top-4"
-          >
-            <h3 className="text-xl font-semibold mb-6 text-[var(--text-primary)] flex items-center">
-              <i className="fa-solid fa-route text-[var(--brand-pink)] mr-2"></i>
-              推荐考证路径
-            </h3>
-            <div className="space-y-4">
-              <div className="relative">
-                {/* 连接线 */}
-                <div className="absolute left-4 top-8 bottom-6 w-0.5 bg-[var(--light-pink)]"></div>
-                
-                {/* 阶段1 */}
-                <div className="flex mb-8">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
-                    1
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 sticky top-4"
+            >
+              <h3 className="text-xl font-semibold mb-6 text-[var(--text-primary)] flex items-center">
+                <i className="fa-solid fa-route text-[var(--brand-pink)] mr-2"></i>
+                推荐考证路径
+              </h3>
+              <div className="space-y-4">
+                <div className="relative">
+                  {/* 连接线 */}
+                  <div className="absolute left-4 top-8 bottom-6 w-0.5 bg-[var(--light-pink)]"></div>
+                  
+                  {/* 阶段1 */}
+                  <div className="flex mb-8">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
+                      1
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">入门必拿</h4>
+                      <p className="text-sm text-[var(--text-secondary)]">低压电工特种作业证 → 合法上岗</p>
+                    </div>
                   </div>
-                  <div className="ml-4 flex-1">
-                    <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">入门必拿</h4>
-                    <p className="text-sm text-[var(--text-secondary)]">低压电工特种作业证 → 合法上岗</p>
+                  
+                  {/* 阶段2 */}
+                  <div className="flex mb-8">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
+                      2
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">职业基础</h4>
+                      <p className="text-sm text-[var(--text-secondary)]">新能源汽车维修工（中级/四级）→ 行业通用证</p>
+                    </div>
                   </div>
-                </div>
-                
-                {/* 阶段2 */}
-                <div className="flex mb-8">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
-                    2
+                  
+                  {/* 阶段3 */}
+                  <div className="flex mb-8">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
+                      3
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">核心专项</h4>
+                      <p className="text-sm text-[var(--text-secondary)]">交通部：动力电池+驱动电机 专项证书 → 技术硬通货</p>
+                    </div>
                   </div>
-                  <div className="ml-4 flex-1">
-                    <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">职业基础</h4>
-                    <p className="text-sm text-[var(--text-secondary)]">新能源汽车维修工（中级/四级）→ 行业通用证</p>
+                  
+                  {/* 阶段4 */}
+                  <div className="flex mb-8">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
+                      4
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">高薪进阶</h4>
+                      <p className="text-sm text-[var(--text-secondary)]">新能源汽车维修工（高级/三级）+ 主流车企认证 → 进4S店/专修厂</p>
+                    </div>
                   </div>
-                </div>
-                
-                {/* 阶段3 */}
-                <div className="flex mb-8">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
-                    3
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">核心专项</h4>
-                    <p className="text-sm text-[var(--text-secondary)]">交通部：动力电池+驱动电机 专项证书 → 技术硬通货</p>
-                  </div>
-                </div>
-                
-                {/* 阶段4 */}
-                <div className="flex mb-8">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
-                    4
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">高薪进阶</h4>
-                    <p className="text-sm text-[var(--text-secondary)]">新能源汽车维修工（高级/三级）+ 主流车企认证 → 进4S店/专修厂</p>
-                  </div>
-                </div>
-                
-                {/* 阶段5 */}
-                <div className="flex">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
-                    5
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">技术专家（长期）</h4>
-                    <p className="text-sm text-[var(--text-secondary)]">技师/高级技师 + 电池维修深度认证 → 技术主管/店长/培训师</p>
+                  
+                  {/* 阶段5 */}
+                  <div className="flex">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--brand-pink)] flex items-center justify-center text-white font-medium relative z-10">
+                      5
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h4 className="text-base font-medium text-[var(--text-primary)] mb-1">技术专家（长期）</h4>
+                      <p className="text-sm text-[var(--text-secondary)]">技师/高级技师 + 电池维修深度认证 → 技术主管/店长/培训师</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.section>
-        </motion.div>
+            </motion.section>
+          </motion.div>
+        </div>
       </div>
       
       {/* 证书详情弹窗 */}
