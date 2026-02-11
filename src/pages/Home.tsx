@@ -3,13 +3,18 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import CourseCatalog from '@/components/CourseCatalog';
 import TrainingGuide from '@/components/TrainingGuide';
+import MotorTheory from '@/components/MotorTheory';
 import AIAssistant from '@/components/AIAssistant';
 import SimulationPractice from '@/components/SimulationPractice';
 import TrainingProject from '@/components/TrainingProject';
 import Certification from '@/components/Certification';
+import Profile from '@/components/Profile';
 
 // Tab类型定义
-type TabType = 'theory' | 'simulation' | 'training' | 'certification';
+type TabType = 'theory' | 'simulation' | 'training' | 'certification' | 'profile';
+
+// 课程内容类型定义
+type CourseContentType = 'training' | 'theory';
 
 export default function Home() {
   // 当前选中的Tab
@@ -17,12 +22,16 @@ export default function Home() {
   
   // 选中的文字
   const [selectedText, setSelectedText] = useState<string>('');
+  
+  // 选中的课程内容
+  const [selectedContent, setSelectedContent] = useState<CourseContentType>('training');
 
   // Tab配置
   const tabs = [
     { id: 'theory', label: '理论学习' },
     { id: 'simulation', label: '虚拟演练' },
     { id: 'training', label: '实训项目' },
+    { id: 'profile', label: '学习档案' },
     { id: 'certification', label: '技能认证' },
   ] as const;
 
@@ -34,10 +43,14 @@ export default function Home() {
           <div className="h-full">
             <div className="flex gap-[5px] w-full h-[calc(100vh-100px)] max-w-7xl mx-auto">
               <div className="w-64 flex-shrink-0 h-full">
-                <CourseCatalog />
+                <CourseCatalog onContentSelect={setSelectedContent} />
               </div>
               <div className="flex-1 h-full">
-                <TrainingGuide onSelectText={setSelectedText} />
+                {selectedContent === 'training' ? (
+                  <TrainingGuide onSelectText={setSelectedText} />
+                ) : (
+                  <MotorTheory onSelectText={setSelectedText} />
+                )}
               </div>
               <div className="w-80 flex-shrink-0 h-full">
                 <AIAssistant selectedText={selectedText} />
@@ -51,6 +64,8 @@ export default function Home() {
         return <div className="h-full"><TrainingProject /></div>;
       case 'certification':
         return <div className="h-full"><Certification /></div>;
+      case 'profile':
+        return <div className="h-full"><Profile /></div>;
       default:
         return null;
     }

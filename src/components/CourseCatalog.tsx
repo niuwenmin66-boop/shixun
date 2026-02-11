@@ -16,9 +16,9 @@ interface CourseItem {
   }[];
 }
 
-export default function CourseCatalog() {
+export default function CourseCatalog({ onContentSelect }: { onContentSelect?: (contentType: 'training' | 'theory') => void }) {
   // 目录数据
-  const [catalog] = useState<CourseItem[]>([
+  const [catalog, setCatalog] = useState<CourseItem[]>([
     {
       id: 'project-7',
       title: '项目七 电动汽车制动系统维护',
@@ -107,6 +107,28 @@ export default function CourseCatalog() {
                                     ? 'bg-[var(--brand-pink)]/10 text-[var(--brand-pink)] font-medium'
                                     : 'hover:bg-[var(--light-pink)]/30 text-[var(--text-primary)]'
                                 )}
+                                onClick={() => {
+                                  // 更新目录数据，设置当前subItem为激活状态，其他为非激活
+                                  setCatalog(prevCatalog => 
+                                    prevCatalog.map(project => ({
+                                      ...project,
+                                      items: project.items?.map(item => ({
+                                        ...item,
+                                        subItems: item.subItems?.map(si => ({
+                                          ...si,
+                                          isActive: si.id === subItem.id
+                                        }))
+                                      }))
+                                    }))
+                                  );
+                                  
+                                  // 调用回调函数
+                                  if (subItem.id === 'theory-7-3') {
+                                    onContentSelect?.('theory');
+                                  } else if (subItem.id === 'training-7-3') {
+                                    onContentSelect?.('training');
+                                  }
+                                }}
                               >
                                 {subItem.title}
                               </button>
