@@ -24,7 +24,7 @@ export default function CourseCatalog() {
       title: '项目七 电动汽车制动系统维护',
       items: [
         { id: 'task-7-1', title: '任务一 认识电动汽车制动系统' },
-        { id: 'task-7-2', title: '任务二 制动能量回收系统故障诊断与...' },
+        { id: 'task-7-2', title: '任务二 制动能量回收系统故障诊断' },
         {
           id: 'task-7-3',
           title: '任务三 交流异步电机拆卸',
@@ -66,7 +66,7 @@ export default function CourseCatalog() {
 
   return (
     <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-4 h-full overflow-y-auto">
-      <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">课程目录</h3>
+      <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">目录</h3>
       
       <div className="space-y-2">
         {catalog.map((project) => (
