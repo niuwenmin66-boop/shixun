@@ -54,6 +54,9 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
   const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
   const [showAskAIButton, setShowAskAIButton] = useState(false);
   
+  // 选中图片状态
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  
   // 容器引用
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -89,14 +92,59 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
       
       // 计算选中区域的位置
       const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
       
       if (containerRef.current) {
+        // 获取容器的位置和尺寸
         const containerRect = containerRef.current.getBoundingClientRect();
-        setSelectionPosition({
-          x: rect.right - containerRect.left + 10,
-          y: rect.bottom - containerRect.top + 10
-        });
+        
+        // 获取整个选中区域的位置
+        const selectionRect = range.getBoundingClientRect();
+        
+        // 计算最后一个字的位置
+        // 创建一个新的范围，只包含最后一个字
+        const lastCharRange = document.createRange();
+        const lastCharOffset = range.endOffset - 1;
+        if (lastCharOffset >= 0) {
+          lastCharRange.setStart(range.endContainer, lastCharOffset);
+          lastCharRange.setEnd(range.endContainer, range.endOffset);
+        } else {
+          lastCharRange.setStart(range.endContainer, 0);
+          lastCharRange.setEnd(range.endContainer, 1);
+        }
+        
+        // 获取最后一个字的位置
+        const lastCharRect = lastCharRange.getBoundingClientRect();
+        
+        // 计算按钮位置：最后一个字的下方行，中线对齐
+        const buttonWidth = 80; // 按钮宽度
+        const buttonHeight = 32; // 按钮高度
+        
+        // 计算相对于容器的位置
+        let x = (lastCharRect.left - containerRect.left) + (lastCharRect.width / 2) - (buttonWidth / 2);
+        let y = (lastCharRect.bottom - containerRect.top) + 15; // 下方行，增加一些间距
+        
+        // 边界检查，确保按钮不会被容器边框压住
+        const containerWidth = containerRect.width;
+        const containerHeight = containerRect.height;
+        
+        // 水平边界检查
+        if (x < 10) {
+          x = 10;
+        } else if (x + buttonWidth > containerWidth - 10) {
+          x = containerWidth - buttonWidth - 10;
+        }
+        
+        // 垂直边界检查
+        if (y + buttonHeight > containerHeight - 10) {
+          // 如果按钮会超出容器底部，调整位置到选中区域的上方
+          y = (selectionRect.top - containerRect.top) - buttonHeight - 15;
+          // 确保按钮不会超出容器顶部
+          if (y < 10) {
+            y = 10;
+          }
+        }
+        
+        setSelectionPosition({ x, y });
         setShowAskAIButton(true);
       }
     };
@@ -304,7 +352,6 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
               </p>
               <div 
                 className="relative rounded-lg overflow-hidden cursor-pointer"
-                onClick={() => setSelectedImage(trainingImage)}
               >
                 <img 
                   src={trainingImage} 
@@ -312,8 +359,28 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                   className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(trainingImage);
+                    }}
+                    className="text-white text-2xl hover:text-white/80 transition-colors"
+                  >
+                    <i className="fa-solid fa-search-plus"></i>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageUrl(trainingImage);
+                      if (onSelectText) {
+                        onSelectText(`[图片]${trainingImage}`);
+                      }
+                    }}
+                    className="text-white text-2xl hover:text-white/80 transition-colors"
+                  >
+                    <i className="fa-solid fa-robot"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -412,7 +479,6 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 <div className="mt-3 flex-grow">
                   <div 
                     className="relative rounded-lg overflow-hidden cursor-pointer h-full"
-                    onClick={() => setSelectedImage(workplaceImage)}
                   >
                     <img 
                       src={workplaceImage} 
@@ -420,8 +486,28 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                       className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(workplaceImage);
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImageUrl(workplaceImage);
+                          if (onSelectText) {
+                            onSelectText(`[图片]${workplaceImage}`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -441,7 +527,6 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 <div className="mt-3 flex-grow">
                   <div 
                     className="relative rounded-lg overflow-hidden cursor-pointer h-full"
-                    onClick={() => setSelectedImage(safetyImage)}
                   >
                     <img 
                       src={safetyImage} 
@@ -449,8 +534,28 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                       className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(safetyImage);
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImageUrl(safetyImage);
+                          if (onSelectText) {
+                            onSelectText(`[图片]${safetyImage}`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -505,7 +610,6 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                   </div>
                   <div 
                     className="mt-3 relative rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedImage(stepImages[0])}
                   >
                     <img 
                       src={stepImages[0]} 
@@ -513,8 +617,28 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                       className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fa-solid fa-search-plus text-white text-2xl"></i>
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(stepImages[0]);
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImageUrl(stepImages[0]);
+                          if (onSelectText) {
+                            onSelectText(`[图片]${stepImages[0]}`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -805,7 +929,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
         >
           <button
             onClick={handleAskAI}
-            className="bg-[var(--brand-pink)] text-white px-3 py-1 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors flex items-center text-sm"
+            className="bg-[var(--brand-pink)] text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors flex items-center text-sm whitespace-nowrap min-w-[80px] justify-center"
           >
             <i className="fa-solid fa-robot mr-1"></i>
             问问AI
