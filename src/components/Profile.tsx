@@ -415,7 +415,6 @@ export default function Profile() {
           type: 'group',
           left: 10,
           top: 20,
-          z: 10, // 设置z值为10，确保面板位于节点上方
           children: [
             // 面板背景
             {
@@ -635,9 +634,9 @@ export default function Profile() {
               color: statusColorMap[node.status as SkillStatus]
             },
             symbolSize: node.level === 'L0' ? 50 : node.level === 'L1' ? 40 : 30,
-            // 设置初始位置，避免节点与面板重叠
-            x: Math.random() * 700 + 250, // 从250开始，更远地避开左侧面板
-            y: Math.random() * 400 + 100  // 从100开始，更远地避开面板顶部
+            // 设置初始位置，避免节点出现在左上角的技能掌握情况面板区域
+            x: Math.random() * 800 + 200, // 从200开始，避开左侧面板
+            y: Math.random() * 400 + 250  // 从250开始，避上面板
           })),
           links: filteredLinks,
           roam: true,
@@ -1404,16 +1403,8 @@ export default function Profile() {
                     title={selectedResource.name}
                     controls
                     controlsList="nodownload"
-                    onError={(e) => {
-                      console.error('视频加载失败:', e);
-                      // 可以在这里添加错误处理逻辑，例如显示错误信息
-                    }}
                   >
-                    <div className="flex flex-col items-center justify-center h-full text-[var(--text-secondary)]">
-                      <i className="fa-solid fa-video text-4xl mb-2"></i>
-                      <p>您的浏览器不支持视频播放。</p>
-                      <p className="text-xs mt-2">视频加载失败，请检查网络连接或稍后重试。</p>
-                    </div>
+                    您的浏览器不支持视频播放。
                   </video>
                 </div>
               </div>
