@@ -374,68 +374,72 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             className="pl-1"
           >
             <div className="bg-[var(--bg-primary)] rounded-lg p-4">
+              <p className="mb-4 text-[var(--text-secondary)]">
+                交流异步电机拆卸步骤：<br/>
+                拆卸前准备好螺丝刀、扳手、记号笔等工具，操作人员佩戴绝缘手套，关闭电机总电源并悬挂警示标识，确认转子完全停稳、无电压输出后，方可开始操作。
+              </p>
               <ol className="space-y-4 text-[var(--text-secondary)]">
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">1</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">上电自检</h4>
-                    <p>主控 MCU 检测母线电压、相电流采样、温度传感器与旋变信号，全部正常后进入待机。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">断开电源并确保电机完全停止</h4>
+                    <p>关闭电机对应总电源开关，拉下闸刀并悬挂"设备检修、禁止合闸"标识，等待转子完全停稳、电机自然冷却，用手拨动转子确认无卡滞，必要时用万用表检测无电压，保障操作安全。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">2</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">启机预充</h4>
-                    <p>闭合预充继电器，通过 PTC 电阻将直流母线电容电压缓慢抬升至电池电压 95%，随后吸合主正继电器，切除预充。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸电机接线盒盖板</h4>
+                    <p>找到电机侧面接线盒，用匹配工具拧松盖板固定螺栓（或撬动卡扣），取下盖板后，用抹布擦拭接线盒内部灰尘，确保接线端子清晰可见，妥善保存好拆卸的螺栓。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">3</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">转速指令解析</h4>
-                    <p>VCU 通过 CAN 发送目标转速 n* 与转矩 T*；MCU 依据当前转子实际转速 n 计算滑差 s = (n₁−n)/n₁，并查表得到最佳滑差-转矩曲线。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸三相线束连接器</h4>
+                    <p>根据线束连接方式，拧松压紧螺栓或按压插头卡扣，缓慢分离三相线束与电机接线端子，避免暴力拉扯，拆卸后用绝缘胶带包裹线束接头，整理好并放置在安全位置。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">4</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">SVPWM 调制</h4>
-                    <p>根据目标转矩查弱磁/最大转矩电流比（MTPA）表，得到 id、iq；经 Park 逆变换得到三相电流参考 ia、ib、ic；通过 SVPWM 生成六路 PWM 占空比，驱动 IGBT 三相桥。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">记录电机接线相序</h4>
+                    <p>观察接线盒内U、V、W（或A、B、C）端子与三相线束的对应关系，用记号笔在每条线束和端子旁做好清晰标记，可拍摄接线照片辅助记录，防止后续装配接反相序。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">5</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">功率驱动</h4>
-                    <p>IGBT 将直流母线电压斩波成三相正弦 PWM 波，经滤波电感后形成近似正弦的相电流，注入定子绕组，产生旋转磁场。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸电机速度编码器</h4>
+                    <p>找到电机后端盖的速度编码器，先取下防护罩（若有），拔出编码器接线插头并记录朝向，再拧松固定螺栓，轻轻取出编码器，用抹布擦拭检测头后妥善包裹存放，避免损坏。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">6</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">转子感应与转矩输出</h4>
-                    <p>旋转磁场切割转子导条，感应出滑差频率的转子电流；该电流与气隙磁场作用产生异步转矩，驱动转子跟随磁场旋转，实现机电能量转换。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸轴承底座与后端盖</h4>
+                    <p>按对角顺序均匀拧松并拆卸轴承底座和后端盖的固定螺栓，用垫有软布的撬棒轻轻撬动，使后端盖与机壳、轴承底座分离，缓慢取下后擦拭接触面并清理灰尘油污。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">7</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">闭环监控</h4>
-                    <p>双环 PI：转速环 1 kHz 刷新，电流环 10 kHz 刷新；实时比较 n 与 n*，动态调整 iq，抑制负载扰动；同步监测温度、电流、电压，触发降额或故障保护。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸转子前端弹性挡圈</h4>
+                    <p>转动转子使前端弹性挡圈完全暴露，用匹配挡圈钳撑开挡圈，使其脱离转子轴卡槽，轻轻取出挡圈并妥善保存，擦拭卡槽处灰尘，检查卡槽有无磨损变形。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">8</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">能量回收</h4>
-                    <p>当 VCU 请求制动，MCU 将 iq 设为负值，电机进入发电状态，母线电压泵升至电池允许上限后，通过 Buck-Boost 回馈能量至电池，实现制动能量回收。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">取出转子</h4>
+                    <p>清理转子与定子间的异物，小型电机可直接用手水平匀速拉动转子取出，大型电机需用起重设备辅助，取出后将转子放在铺有软布的平面上，用防尘布覆盖定子内部防灰尘。</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">9</span>
                   <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">下电流程</h4>
-                    <p>转速降至 50 rpm 以下，断开主正继电器，电容放电至 &lt;60 V，MCU 进入休眠，完成一次完整的"电子工作过程"。</p>
+                    <h4 className="font-medium text-[var(--text-primary)] mb-1">检查定子绕组和轴承状况</h4>
+                    <p>检查定子绕组外观有无破损、烧焦，用万用表测量绝缘电阻是否达标，端子有无氧化松动；检查轴承外观、转动顺畅度及润滑情况，做好检查记录，标注问题部件以便后续修复。</p>
                   </div>
                 </li>
               </ol>
