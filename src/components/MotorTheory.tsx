@@ -444,6 +444,13 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
         )}
       </div>
 
+      {/* 交流异步电机拆卸步骤排序 */}
+      <div className="mb-6">
+        <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+          <MotorDismantlingQuiz />
+        </div>
+      </div>
+
       {/* 异步电机参数计算 */}
       <div className="mb-6">
         <button
@@ -477,6 +484,10 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
               <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)]">
                 <div ref={chartRef} className="h-80 w-full"></div>
               </div>
+            </div>
+            
+            <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow mb-4">
+              <MotorParameterCalculator />
             </div>
           </motion.div>
         )}
@@ -550,20 +561,13 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                 <Motor3DModel />
               </div>
               
-              {/* 资源2：拆卸步骤排序 */}
-              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <MotorDismantlingQuiz />
-              </div>
-              
+
               {/* 资源3：故障诊断模拟器 */}
               <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                 <MotorDiagnosticSimulator />
               </div>
               
-              {/* 资源4：参数计算器 */}
-              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <MotorParameterCalculator />
-              </div>
+
             </div>
           </motion.div>
         )}
