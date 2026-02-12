@@ -81,16 +81,16 @@ export default function Profile() {
       difficulty: '进阶'
     },
     {
-            id: 3,
-            name: '电机参数计算器',
-            icon: 'fa-calculator',
-            type: '组件',
-            url: 'MotorParameterCalculator',
-            image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=200&fit=crop',
-            description: '通过调整电机参数，实时计算电机的额定电流、转矩、转速等关键参数，帮助理解电机参数之间的关系。',
-            duration: '10分钟',
-            difficulty: '进阶'
-          }
+      id: 3,
+      name: '电机参数计算器',
+      icon: 'fa-calculator',
+      type: '组件',
+      url: 'MotorParameterCalculator',
+      image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=200&fit=crop',
+      description: '通过调整电机参数，实时计算电机的额定电流、转矩、转速等关键参数，帮助理解电机参数之间的关系。',
+      duration: '10分钟',
+      difficulty: '进阶'
+    }
   ];
 
   // 技能节点数据
