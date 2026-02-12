@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as echarts from 'echarts';
 import Motor3DModel from './Motor3DModel';
-import MotorAnimation from './MotorAnimation';
+import MotorDismantlingQuiz from './MotorAnimation';
 import MotorDiagnosticSimulator from './MotorDiagnosticSimulator';
 import MotorParameterCalculator from './MotorParameterCalculator';
 import MotorStatorInteractive from './MotorStatorInteractive';
@@ -550,9 +550,9 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                 <Motor3DModel />
               </div>
               
-              {/* 资源2：工作原理动画 */}
+              {/* 资源2：拆卸步骤排序 */}
               <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <MotorAnimation />
+                <MotorDismantlingQuiz />
               </div>
               
               {/* 资源3：故障诊断模拟器 */}
