@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import * as pdfjsLib from 'pdfjs-dist';
+import MotorParameterCalculator from './MotorParameterCalculator';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -80,16 +81,16 @@ export default function Profile() {
       difficulty: '进阶'
     },
     {
-      id: 3,
-      name: '交流异步电机拆卸步骤排序',
-      icon: 'fa-sort',
-      type: '网页',
-      url: 'https://developer.mozilla.org/zh-CN/docs/Web/JavaScript',
-      image: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=400&h=200&fit=crop',
-      description: '学习交流异步电机拆卸的正确步骤和顺序，掌握电机拆卸的关键技术要点。',
-      duration: '15分钟',
-      difficulty: '进阶'
-    }
+            id: 3,
+            name: '电机参数计算器',
+            icon: 'fa-calculator',
+            type: '组件',
+            url: 'MotorParameterCalculator',
+            image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=200&fit=crop',
+            description: '通过调整电机参数，实时计算电机的额定电流、转矩、转速等关键参数，帮助理解电机参数之间的关系。',
+            duration: '10分钟',
+            difficulty: '进阶'
+          }
   ];
 
   // 技能节点数据
@@ -414,6 +415,7 @@ export default function Profile() {
           type: 'group',
           left: 10,
           top: 20,
+          z: 10, // 设置z值为10，确保面板位于节点上方
           children: [
             // 面板背景
             {
@@ -632,7 +634,10 @@ export default function Profile() {
             itemStyle: {
               color: statusColorMap[node.status as SkillStatus]
             },
-            symbolSize: node.level === 'L0' ? 50 : node.level === 'L1' ? 40 : 30
+            symbolSize: node.level === 'L0' ? 50 : node.level === 'L1' ? 40 : 30,
+            // 设置初始位置，避免节点与面板重叠
+            x: Math.random() * 700 + 250, // 从250开始，更远地避开左侧面板
+            y: Math.random() * 400 + 100  // 从100开始，更远地避开面板顶部
           })),
           links: filteredLinks,
           roam: true,
@@ -652,9 +657,9 @@ export default function Profile() {
             }
           },
           force: {
-            repulsion: 800,
-            edgeLength: 150,
-            gravity: 0.1,
+            repulsion: 600, // 减少排斥力，使节点更紧凑
+            edgeLength: 100, // 缩短边长度，使节点更集中
+            gravity: 0.2, // 增加重力，使节点向中心聚集
             layoutAnimation: true
           }
         }
@@ -1139,7 +1144,13 @@ export default function Profile() {
         
         {/* 右侧技能图谱 */}
         <div className="flex-1 bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-4">
-          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-4">技能图谱</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-[var(--text-primary)]">技能图谱</h3>
+            <div className="flex items-center bg-[var(--bg-primary)] rounded-[8px] p-2 shadow-sm">
+              <i className="fa-solid fa-circle-info text-[var(--text-secondary)] mr-2"></i>
+              <p className="text-xs text-[var(--text-secondary)]">点击技能点，可查看掌握程度，AI提供个性化学习建议</p>
+            </div>
+          </div>
           <div ref={chartRef} style={{ width: '100%', height: '600px' }}></div>
         </div>
       </div>
@@ -1239,27 +1250,66 @@ export default function Profile() {
             <div>
               <h4 className="text-lg font-medium text-[var(--text-primary)] mb-2">相关资源</h4>
               <div className="space-y-3">
-                <div className="bg-[var(--bg-primary)] rounded-[8px] p-3 cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors">
-                  <div className="flex items-center mb-2">
-                    <i className="fa-solid fa-book text-[var(--brand-pink)] mr-2"></i>
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{selectedSkill.name}详解</span>
+                {[
+                  {
+                    id: 101,
+                    name: `${selectedSkill.name}详解`,
+                    icon: 'fa-book',
+                    type: 'Markdown',
+                    url: '充配电总成拆装实训指导书.md',
+                    image: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=200&fit=crop',
+                    description: `详细介绍${selectedSkill.name}的核心概念、原理和应用，包括理论基础、实际操作流程及常见问题处理。`,
+                    duration: '1小时30分钟',
+                    difficulty: '入门'
+                  },
+                  {
+                    id: 102,
+                    name: `${selectedSkill.name}操作演示`,
+                    icon: 'fa-video',
+                    type: '视频',
+                    url: 'https://e.necibook.com/api/media/api/v1/media/showImage/2021823151676293120',
+                    image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=200&fit=crop',
+                    description: `通过视频演示${selectedSkill.name}的实际操作过程，包括步骤分解、注意事项和常见问题处理方法。`,
+                    duration: '30分钟',
+                    difficulty: '入门'
+                  },
+                  {
+                    id: 103,
+                    name: `${selectedSkill.name}实训项目`,
+                    icon: 'fa-tools',
+                    type: '组件',
+                    url: 'MotorParameterCalculator',
+                    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=200&fit=crop',
+                    description: `通过实际操作练习，巩固${selectedSkill.name}的理论知识，提高实际操作能力和问题解决能力。`,
+                    duration: '2小时',
+                    difficulty: '进阶'
+                  }
+                ].map((resource) => (
+                  <div 
+                    key={resource.id} 
+                    className="bg-[var(--bg-primary)] rounded-[8px] p-3 cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors relative"
+                    onClick={() => {
+                      setSelectedResource(resource);
+                      setShowLinkPreview(true);
+                    }}
+                  >
+                    <div className="flex items-center mb-2">
+                      <i className={`fa-solid ${resource.icon} text-[var(--brand-pink)] mr-2`}></i>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{resource.name}</span>
+                    </div>
+                    <div className="text-xs text-[var(--text-secondary)]">{resource.type === 'Markdown' ? '理论学习资料' : resource.type === '视频' ? '视频教程' : '实践练习'}</div>
+                    <button
+                      className="absolute bottom-3 right-3 px-3 py-1 bg-[var(--brand-pink)] text-white text-xs font-medium rounded-[6px] hover:bg-pink-600 transition-colors shadow-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedResource(resource);
+                        setShowLinkPreview(true);
+                      }}
+                    >
+                      开始学习
+                    </button>
                   </div>
-                  <div className="text-xs text-[var(--text-secondary)]">理论学习资料</div>
-                </div>
-                <div className="bg-[var(--bg-primary)] rounded-[8px] p-3 cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors">
-                  <div className="flex items-center mb-2">
-                    <i className="fa-solid fa-video text-[var(--brand-pink)] mr-2"></i>
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{selectedSkill.name}操作演示</span>
-                  </div>
-                  <div className="text-xs text-[var(--text-secondary)]">视频教程</div>
-                </div>
-                <div className="bg-[var(--bg-primary)] rounded-[8px] p-3 cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors">
-                  <div className="flex items-center mb-2">
-                    <i className="fa-solid fa-tools text-[var(--brand-pink)] mr-2"></i>
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{selectedSkill.name}实训项目</span>
-                  </div>
-                  <div className="text-xs text-[var(--text-secondary)]">实践练习</div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1371,6 +1421,16 @@ export default function Profile() {
                     className="w-full h-full"
                     title={selectedResource.name}
                   />
+                </div>
+              </div>
+            )}
+
+            {/* 组件预览 */}
+            {selectedResource.type === '组件' && selectedResource.url === 'MotorParameterCalculator' && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-[var(--text-primary)] mb-2">组件预览</h4>
+                <div className="h-[60vh] border border-[var(--text-secondary)]/30 rounded-[8px] overflow-auto">
+                  <MotorParameterCalculator />
                 </div>
               </div>
             )}
