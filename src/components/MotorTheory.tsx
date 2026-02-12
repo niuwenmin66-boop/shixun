@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Motor3DModel from './Motor3DModel';
+import MotorDismantlingQuiz from './MotorAnimation';
+import MotorDiagnosticSimulator from './MotorDiagnosticSimulator';
+import MotorParameterCalculator from './MotorParameterCalculator';
 
 export default function MotorTheory({ onSelectText }: { onSelectText?: (text: string) => void }) {
   // 展开/折叠状态管理
@@ -9,6 +13,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
     principle: true,
     characteristics: true,
     maintenance: true,
+    resources: true,
   });
   
   // 切换章节展开/折叠
@@ -216,6 +221,49 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                   <li><strong>电机振动大</strong>：检查平衡、轴承、安装等</li>
                   <li><strong>电机效率低</strong>：检查绕组、气隙、负载等</li>
                 </ul>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* 学习资源 */}
+      <div className="mb-6">
+        <button
+          onClick={() => toggleSection('resources')}
+          className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
+        >
+          <span>学习资源</span>
+          <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.resources ? 'transform rotate-180' : ''}`}></i>
+        </button>
+        
+        {expandedSections.resources && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="pl-1"
+          >
+            <div className="grid grid-cols-1 gap-4">
+              {/* 资源1：电机结构3D模型 */}
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <Motor3DModel />
+              </div>
+              
+              {/* 资源2：拆卸步骤排序 */}
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <MotorDismantlingQuiz />
+              </div>
+              
+              {/* 资源3：故障诊断模拟器 */}
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <MotorDiagnosticSimulator />
+              </div>
+              
+              {/* 资源4：参数计算器 */}
+              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <MotorParameterCalculator />
               </div>
             </div>
           </motion.div>
