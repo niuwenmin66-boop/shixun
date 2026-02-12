@@ -1404,8 +1404,16 @@ export default function Profile() {
                     title={selectedResource.name}
                     controls
                     controlsList="nodownload"
+                    onError={(e) => {
+                      console.error('视频加载失败:', e);
+                      // 可以在这里添加错误处理逻辑，例如显示错误信息
+                    }}
                   >
-                    您的浏览器不支持视频播放。
+                    <div className="flex flex-col items-center justify-center h-full text-[var(--text-secondary)]">
+                      <i className="fa-solid fa-video text-4xl mb-2"></i>
+                      <p>您的浏览器不支持视频播放。</p>
+                      <p className="text-xs mt-2">视频加载失败，请检查网络连接或稍后重试。</p>
+                    </div>
                   </video>
                 </div>
               </div>
