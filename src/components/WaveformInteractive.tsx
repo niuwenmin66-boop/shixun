@@ -99,28 +99,7 @@ export default function WaveformInteractive() {
             currentTime={currentTime}
             direction={direction}
           />
-          {/* 当前参数显示 */}
-          <div className="mt-3 p-3 bg-black/30 rounded-lg border border-white/5">
-            <h4 className="text-xs font-medium text-white/50 uppercase tracking-wider mb-2">当前参数</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-white/50">频率:</span>
-                <span className="ml-2 mono text-[#3b82f6]">{frequency.toFixed(1)} Hz</span>
-              </div>
-              <div>
-                <span className="text-white/50">极对数:</span>
-                <span className="ml-2 mono text-[#8b5cf6]">{polePairs}</span>
-              </div>
-              <div>
-                <span className="text-white/50">电流:</span>
-                <span className="ml-2 mono text-[#f59e0b]">{amplitude.toFixed(1)} pu</span>
-              </div>
-              <div>
-                <span className="text-white/50">方向:</span>
-                <span className="ml-2 mono text-white/80">{direction === 1 ? '正转 (A→B→C)' : '反转 (A→C→B)'}</span>
-              </div>
-            </div>
-          </div>
+
         </div>
 
         {/* 控制面板 */}

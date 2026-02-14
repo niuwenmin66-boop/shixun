@@ -55,7 +55,123 @@ export default function AIAssistant({ selectedText: propSelectedText }: { select
   }, [messages]);
 
   // 发送消息
-  const sendMessage = async (messageContent?: string) => {
+  const sendMessage = async (messageContent?: string | any) => {
+    // 检查是否直接传递了消息对象
+    if (typeof messageContent === 'object' && messageContent.role === 'user') {
+      if (isLoading) return;
+      
+      // 直接使用传递的消息对象
+      const newMessages = [...messages, messageContent];
+      
+      setMessages(newMessages);
+      setInputMessage('');
+      setPendingImage(null);
+      setSelectedText(''); // 发送消息后清空选中的文本，使引用文本的框消失
+      setSelectedImage(null); // 发送消息后清空选中的图片，使引用图片的框消失
+      setIsLoading(true);
+      
+      try {
+        // 准备API请求数据，转换消息格式以支持图片
+        const apiMessages = [
+          {
+            role: "system",
+            content: "You are a helpful assistant.请不要输出带复杂格式的回答"
+          }
+        ];
+        
+        // 对于图片消息，使用正确的格式
+        apiMessages.push({
+          role: messageContent.role,
+          content: `${messageContent.content} ${messageContent.imageUrl}`
+        });
+        
+        const requestData = {
+          model: "kimi-k2.5",
+          messages: apiMessages,
+          temperature: 0.6,
+          max_tokens: 32768,
+          top_p: 0.95,
+          stream: true,
+          thinking: {
+            type: "disabled"
+          }
+        };
+
+        // 发送API请求
+        const response = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer sk-4eO2ekEo0bZbimbr9OreFy1F1W79bvWXuKycc1suiqnpB5yF'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+          // 获取详细的错误信息
+          try {
+            const errorData = await response.json();
+            throw new Error(`API请求失败: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+          } catch (e) {
+            throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+          }
+        }
+
+        // 处理流式响应
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('无法获取响应流');
+        }
+
+        let aiResponseContent = '';
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          // 处理SSE格式的响应
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') break;
+              try {
+                const json = JSON.parse(data);
+                if (json.choices && json.choices[0]?.delta?.content) {
+                  aiResponseContent += json.choices[0].delta.content;
+                  // 更新消息
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    const lastMessage = updated[updated.length - 1];
+                    if (lastMessage.role === 'assistant') {
+                      lastMessage.content = aiResponseContent;
+                    } else {
+                      updated.push({ role: 'assistant', content: aiResponseContent, type: 'text' });
+                    }
+                    return updated;
+                  });
+                }
+              } catch (e) {
+                console.error('解析响应失败:', e);
+              }
+            }
+          }
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('发送消息失败:', error);
+        // 添加错误消息
+        setMessages(prev => [...prev, { role: 'assistant', content: `抱歉，发送消息失败，请稍后重试。错误: ${error.message}`, type: 'text' }]);
+        setIsLoading(false);
+      }
+      
+      return;
+    }
+    
+    // 原始逻辑，处理字符串消息
     const contentToSend = messageContent || inputMessage;
     if ((!contentToSend.trim() && !pendingImage) || isLoading) return;
 
@@ -405,9 +521,16 @@ export default function AIAssistant({ selectedText: propSelectedText }: { select
                 <div className="flex space-x-2">
                   <button
                     onClick={() => {
-                      const message = `讲解图片：${selectedImage}`;
-                      setSelectedImage(null);
-                      sendMessage(message);
+                      if (selectedImage) {
+                        const newMessage: any = {
+                          role: 'user' as const,
+                          content: '讲解图片',
+                          type: 'image' as const,
+                          imageUrl: selectedImage
+                        };
+                        setSelectedImage(null);
+                        sendMessage(newMessage);
+                      }
                     }}
                     className="flex-1 px-3 py-2 rounded-full bg-[var(--brand-pink)] text-white hover:bg-[var(--brand-pink)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     disabled={isLoading}

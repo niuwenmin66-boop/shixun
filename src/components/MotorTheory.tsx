@@ -29,6 +29,9 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
   const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
   const [showAskAIButton, setShowAskAIButton] = useState(false);
   
+  // 放大图片预览状态
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
   // 容器引用
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -373,11 +376,35 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                   </ul>
                 </div>
                 <div className="w-1/3">
-                  <img 
-                    src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
-                    alt="真实定子结构" 
-                    className="w-full h-auto rounded-lg object-cover"
-                  />
+                  <div className="relative rounded-lg overflow-hidden cursor-pointer">
+                    <img 
+                      src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
+                      alt="真实定子结构" 
+                      className="w-full h-auto rounded-lg object-cover hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd");
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectText) {
+                            onSelectText(`[图片]https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -401,11 +428,35 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                   </ul>
                 </div>
                 <div className="w-1/3">
-                  <img 
-                    src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
-                    alt="真实转子结构" 
-                    className="w-full h-auto rounded-lg object-cover"
-                  />
+                  <div className="relative rounded-lg overflow-hidden cursor-pointer">
+                    <img 
+                      src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
+                      alt="真实转子结构" 
+                      className="w-full h-auto rounded-lg object-cover hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd");
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectText) {
+                            onSelectText(`[图片]https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -446,11 +497,35 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                 </p>
               </div>
               <div className="w-1/3">
-                <img 
-                  src="https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424" 
-                  alt="旋转磁场产生原理" 
-                  className="w-full h-auto rounded-lg object-cover"
-                />
+                <div className="relative rounded-lg overflow-hidden cursor-pointer">
+                  <img 
+                    src="https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424" 
+                    alt="旋转磁场产生原理" 
+                    className="w-full h-auto rounded-lg object-cover hover:opacity-90 transition-opacity"
+                  />
+                  <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage("https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424");
+                      }}
+                      className="text-white text-2xl hover:text-white/80 transition-colors"
+                    >
+                      <i className="fa-solid fa-search-plus"></i>
+                    </button>
+                    <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectText) {
+                            onSelectText(`[图片]https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -633,6 +708,37 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             <i className="fa-solid fa-robot mr-1"></i>
             问问AI
           </button>
+        </motion.div>
+      )}
+      
+      {/* 图片预览模态框 */}
+      {selectedImage && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+            className="relative max-w-4xl max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={selectedImage} 
+              alt="放大图片" 
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors"
+            >
+              <i className="fa-solid fa-times text-xl"></i>
+            </button>
+          </motion.div>
         </motion.div>
       )}
     </div>
