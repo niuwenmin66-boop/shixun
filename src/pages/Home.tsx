@@ -24,7 +24,7 @@ export default function Home() {
   const [selectedText, setSelectedText] = useState<string>('');
   
   // 选中的课程内容
-  const [selectedContent, setSelectedContent] = useState<CourseContentType>('training');
+  const [selectedContent, setSelectedContent] = useState<CourseContentType>('theory');
 
   // Tab配置
   const tabs = [

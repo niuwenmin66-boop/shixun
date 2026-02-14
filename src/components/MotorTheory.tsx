@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as echarts from 'echarts';
-import Motor3DModel from './Motor3DModel';
+
 import MotorDismantlingQuiz from './MotorAnimation';
-import MotorDiagnosticSimulator from './MotorDiagnosticSimulator';
+
 import MotorParameterCalculator from './MotorParameterCalculator';
 import MotorStatorInteractive from './MotorStatorInteractive';
+import WaveformInteractive from './WaveformInteractive';
+import Motor3DViewer from './Motor3DViewer';
 
 export default function MotorTheory({ onSelectText }: { onSelectText?: (text: string) => void }) {
   // 展开/折叠状态管理
@@ -13,7 +15,6 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
     goals: true,
     structure: true,
     magneticField: true,
-    workflow: true,
     calculation: true,
     advantages: true,
     resources: true,
@@ -22,6 +23,107 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
   // 图表ref
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
+  
+  // 文字选中状态
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
+  const [showAskAIButton, setShowAskAIButton] = useState(false);
+  
+  // 容器引用
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 文字选中事件处理
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        setShowAskAIButton(false);
+        return;
+      }
+      
+      const text = selection.toString().trim();
+      if (text.length < 5) {
+        setShowAskAIButton(false);
+        return;
+      }
+      
+      setSelectedText(text);
+      
+      // 计算选中区域的位置
+      const range = selection.getRangeAt(0);
+      
+      if (containerRef.current) {
+        // 获取容器的位置和尺寸
+        const containerRect = containerRef.current.getBoundingClientRect();
+        
+        // 获取整个选中区域的位置
+        const selectionRect = range.getBoundingClientRect();
+        
+        // 计算最后一个字的位置
+        // 创建一个新的范围，只包含最后一个字
+        const lastCharRange = document.createRange();
+        const lastCharOffset = range.endOffset - 1;
+        if (lastCharOffset >= 0) {
+          lastCharRange.setStart(range.endContainer, lastCharOffset);
+          lastCharRange.setEnd(range.endContainer, range.endOffset);
+        } else {
+          lastCharRange.setStart(range.endContainer, 0);
+          lastCharRange.setEnd(range.endContainer, 1);
+        }
+        
+        // 获取最后一个字的位置
+        const lastCharRect = lastCharRange.getBoundingClientRect();
+        
+        // 计算按钮位置：最后一个字的下方行，中线对齐
+        const buttonWidth = 80; // 按钮宽度
+        const buttonHeight = 32; // 按钮高度
+        
+        // 计算相对于容器的位置
+        let x = (lastCharRect.left - containerRect.left) + (lastCharRect.width / 2) - (buttonWidth / 2);
+        let y = (lastCharRect.bottom - containerRect.top) + containerRef.current.scrollTop + 15; // 下方行，增加一些间距，加上滚动偏移量
+        
+        // 边界检查，确保按钮不会被容器边框压住
+        const containerWidth = containerRect.width;
+        const containerHeight = containerRect.height;
+        
+        // 水平边界检查
+        if (x < 10) {
+          x = 10;
+        } else if (x + buttonWidth > containerWidth - 10) {
+          x = containerWidth - buttonWidth - 10;
+        }
+        
+        // 垂直边界检查
+        if (y + buttonHeight > containerHeight - 10 + containerRef.current.scrollTop) {
+          // 如果按钮会超出容器底部，调整位置到选中区域的上方
+          y = (selectionRect.top - containerRect.top) + containerRef.current.scrollTop - buttonHeight - 15;
+          // 确保按钮不会超出容器顶部
+          if (y < 10 + containerRef.current.scrollTop) {
+            y = 10 + containerRef.current.scrollTop;
+          }
+        }
+        
+        setSelectionPosition({ x, y });
+        setShowAskAIButton(true);
+      }
+    };
+    
+    window.addEventListener('mouseup', handleSelection);
+    window.addEventListener('touchend', handleSelection);
+    
+    return () => {
+      window.removeEventListener('mouseup', handleSelection);
+      window.removeEventListener('touchend', handleSelection);
+    };
+  }, []);
+  
+  // 问问AI按钮点击事件
+  const handleAskAI = () => {
+    if (selectedText && onSelectText) {
+      onSelectText(selectedText);
+    }
+    setShowAskAIButton(false);
+  };
   
   // 切换章节展开/折叠
   const toggleSection = (section: string) => {
@@ -202,7 +304,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
   }, []);
 
   return (
-    <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-full overflow-y-auto">
+    <div ref={containerRef} className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-full overflow-y-auto relative">
       {/* 标题 */}
       <h1 className="text-lg font-semibold mb-6 text-[var(--text-primary)] border-b border-[var(--light-pink)] pb-3">
         交流异步电机的结构与工作原理
@@ -226,15 +328,12 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="rounded-lg p-4">
-              <p className="mb-3 text-[var(--text-primary)]">通过本课学习，应能够：</p>
-              <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2">
+            <p className="mb-3 text-[var(--text-primary)]">通过本课学习，应能够：</p>
+            <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2">
                 <li>说出交流异步电机的基本结构组成</li>
                 <li>理解旋转磁场的产生原理</li>
-                <li>分析异步电机的工作过程</li>
                 <li>初步理解在新能源汽车中的应用意义</li>
               </ul>
-            </div>
           </motion.div>
         )}
       </div>
@@ -258,7 +357,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             className="pl-1"
           >
             {/* 定子结构 */}
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-cog text-[var(--brand-pink)] mr-2"></i>定子（Stator）</h3>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
@@ -289,7 +388,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             </div>
             
             {/* 转子结构 */}
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-cog text-[var(--brand-pink)] mr-2"></i>转子（Rotor）</h3>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
@@ -308,6 +407,14 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                     className="w-full h-auto rounded-lg object-cover"
                   />
                 </div>
+              </div>
+            </div>
+            
+            {/* 3D资源 */}
+            <div className="mb-4">
+              <div className="bg-[var(--bg-primary)] rounded-lg p-4 border border-[var(--light-pink)]">
+                <h3 className="font-medium mb-3 text-[var(--text-primary)]">交流感应电动机 绕线式-转子3D模型</h3>
+                <Motor3DViewer />
               </div>
             </div>
           </motion.div>
@@ -332,128 +439,32 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="bg-[var(--bg-primary)] rounded-lg p-4 mb-4">
-              <p className="mb-4 text-[var(--text-secondary)] leading-relaxed">
-                三相定子绕组通入相位差120°的交流电，形成空间上依次相差120°的脉振磁场，合成后得到幅值恒定、匀速旋转的合成磁场，其同步转速n₁=60f/p。
-              </p>
-              <div className="bg-white rounded-lg p-3 border border-[var(--light-pink)]">
-                <p className="text-[var(--text-primary)] font-medium mb-2">形象理解：</p>
-                <p className="text-[var(--text-secondary)] leading-relaxed">
-                  想象三个人轮流拍手：<br/>
-                  1. 三相电就像三位节拍不同的鼓手，A、B、C 各相差"一拍"（120°）。<br/>
-                  2. 定子绕组是三组"线圈鼓"，通电后各自产生一个小磁场。<br/>
-                  3. 因为三人节拍错开，小磁场像接力棒一样"你追我赶"，合成一个原地打转的大磁场——这就是"旋转磁场"。<br/>
-                  4. 转速只由电源频率和电机极对数决定，跟转子有没有动无关，所以叫"同步转速"。<br/>
-                  5. 转子像坐在旋转木马外的孩子，被转动的磁场"牵着跑"，但又永远追不上，于是形成"异步"。
-                </p>
-                <p className="mt-3 text-[var(--text-secondary)] font-medium italic">
-                  一句话：三相电"轮流拍手"，定子里就转起了"隐形拨浪盘"，隔空推着转子转。
+            <div className="flex gap-4 mb-4">
+              <div className="flex-1">
+                <p className="text-[var(--text-primary)] leading-relaxed">
+                  三相定子绕组通入相位差120°的交流电，形成空间上依次相差120°的脉振磁场，合成后得到幅值恒定、匀速旋转的合成磁场，其同步转速n₁=60f/p。
                 </p>
               </div>
+              <div className="w-1/3">
+                <img 
+                  src="https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424" 
+                  alt="旋转磁场产生原理" 
+                  className="w-full h-auto rounded-lg object-cover"
+                />
+              </div>
             </div>
+            
+            {/* 三相电流波形模拟器 */}
+            <div className="mt-6">
+              <WaveformInteractive />
+            </div>
+
           </motion.div>
         )}
       </div>
 
-      {/* 电机工作过程流程 */}
-      <div className="mb-6">
-        <button
-          onClick={() => toggleSection('workflow')}
-          className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
-        >
-          <span>电机工作过程流程</span>
-          <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.workflow ? 'transform rotate-180' : ''}`}></i>
-        </button>
-        
-        {expandedSections.workflow && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="pl-1"
-          >
-            <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-              <p className="mb-4 text-[var(--text-secondary)]">
-                交流异步电机拆卸步骤：<br/>
-                拆卸前准备好螺丝刀、扳手、记号笔等工具，操作人员佩戴绝缘手套，关闭电机总电源并悬挂警示标识，确认转子完全停稳、无电压输出后，方可开始操作。
-              </p>
-              <ol className="space-y-4 text-[var(--text-secondary)]">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">1</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">断开电源并确保电机完全停止</h4>
-                    <p>关闭电机对应总电源开关，拉下闸刀并悬挂"设备检修、禁止合闸"标识，等待转子完全停稳、电机自然冷却，用手拨动转子确认无卡滞，必要时用万用表检测无电压，保障操作安全。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">2</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸电机接线盒盖板</h4>
-                    <p>找到电机侧面接线盒，用匹配工具拧松盖板固定螺栓（或撬动卡扣），取下盖板后，用抹布擦拭接线盒内部灰尘，确保接线端子清晰可见，妥善保存好拆卸的螺栓。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">3</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸三相线束连接器</h4>
-                    <p>根据线束连接方式，拧松压紧螺栓或按压插头卡扣，缓慢分离三相线束与电机接线端子，避免暴力拉扯，拆卸后用绝缘胶带包裹线束接头，整理好并放置在安全位置。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">4</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">记录电机接线相序</h4>
-                    <p>观察接线盒内U、V、W（或A、B、C）端子与三相线束的对应关系，用记号笔在每条线束和端子旁做好清晰标记，可拍摄接线照片辅助记录，防止后续装配接反相序。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">5</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸电机速度编码器</h4>
-                    <p>找到电机后端盖的速度编码器，先取下防护罩（若有），拔出编码器接线插头并记录朝向，再拧松固定螺栓，轻轻取出编码器，用抹布擦拭检测头后妥善包裹存放，避免损坏。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">6</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸轴承底座与后端盖</h4>
-                    <p>按对角顺序均匀拧松并拆卸轴承底座和后端盖的固定螺栓，用垫有软布的撬棒轻轻撬动，使后端盖与机壳、轴承底座分离，缓慢取下后擦拭接触面并清理灰尘油污。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">7</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">拆卸转子前端弹性挡圈</h4>
-                    <p>转动转子使前端弹性挡圈完全暴露，用匹配挡圈钳撑开挡圈，使其脱离转子轴卡槽，轻轻取出挡圈并妥善保存，擦拭卡槽处灰尘，检查卡槽有无磨损变形。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">8</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">取出转子</h4>
-                    <p>清理转子与定子间的异物，小型电机可直接用手水平匀速拉动转子取出，大型电机需用起重设备辅助，取出后将转子放在铺有软布的平面上，用防尘布覆盖定子内部防灰尘。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">9</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">检查定子绕组和轴承状况</h4>
-                    <p>检查定子绕组外观有无破损、烧焦，用万用表测量绝缘电阻是否达标，端子有无氧化松动；检查轴承外观、转动顺畅度及润滑情况，做好检查记录，标注问题部件以便后续修复。</p>
-                  </div>
-                </li>
-              </ol>
-            </div>
-          </motion.div>
-        )}
-      </div>
 
-      {/* 交流异步电机拆卸步骤排序 */}
-      <div className="mb-6">
-        <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-          <MotorDismantlingQuiz />
-        </div>
-      </div>
+
 
       {/* 异步电机参数计算 */}
       <div className="mb-6">
@@ -473,7 +484,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-calculator text-[var(--brand-pink)] mr-2"></i>介绍计算方式</h3>
               <p className="mb-3 text-[var(--text-primary)] leading-relaxed">异步电机的参数计算主要基于其基本结构和工作原理。常用的计算方式包括：</p>
               <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2">
@@ -483,7 +494,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
               </ul>
             </div>
             
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-chart-line text-[var(--brand-pink)] mr-2"></i>电机转差率与性能关系</h3>
               <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)]">
                 <div ref={chartRef} className="h-80 w-full"></div>
@@ -516,24 +527,59 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             className="pl-1"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-                <h3 className="text-md font-medium mb-3 text-[var(--text-primary)]">优势</h3>
-                <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-2">
-                  <li>结构简单：无永磁体，制造与维护成本低</li>
-                  <li>成本低廉：原材料易得，供应链成熟</li>
-                  <li>可靠性高：耐高温、抗退磁，寿命长</li>
-                  <li>高速弱磁区宽：易于实现宽速恒功率运行</li>
-                  <li>免永磁体：规避稀土资源风险与价格波动</li>
+              {/* 优势卡片 */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-md font-semibold mb-3 text-green-700 flex items-center">
+                  <i className="fa-solid fa-plus-circle text-green-500 mr-2"></i>
+                  优势
+                </h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">结构简单：无永磁体，制造与维护成本低</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">成本低廉：原材料易得，供应链成熟</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">可靠性高：耐高温、抗退磁，寿命长</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">高速弱磁区宽：易于实现宽速恒功率运行</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">免永磁体：规避稀土资源风险与价格波动</span>
+                  </li>
                 </ul>
               </div>
               
-              <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-                <h3 className="text-md font-medium mb-3 text-[var(--text-primary)]">劣势</h3>
-                <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-2">
-                  <li>低速效率偏低：励磁电流大，铜耗占比高</li>
-                  <li>需无功励磁：增加逆变器容量与损耗</li>
-                  <li>功率密度与转矩密度不及永磁机：同体积输出偏小</li>
-                  <li>控制器算法复杂：需精确滑差估算与转子参数辨识</li>
+              {/* 劣势卡片 */}
+              <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 border border-red-100 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-md font-semibold mb-3 text-red-700 flex items-center">
+                  <i className="fa-solid fa-minus-circle text-red-500 mr-2"></i>
+                  劣势
+                </h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">低速效率偏低：励磁电流大，铜耗占比高</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">需无功励磁：增加逆变器容量与损耗</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">功率密度与转矩密度不及永磁机：同体积输出偏小</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">控制器算法复杂：需精确滑差估算与转子参数辨识</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -541,13 +587,13 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
         )}
       </div>
 
-      {/* 学习资源 */}
+      {/* 小练习 */}
       <div className="mb-6">
         <button
           onClick={() => toggleSection('resources')}
           className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
         >
-          <span>学习资源</span>
+          <span>小练习</span>
           <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.resources ? 'transform rotate-180' : ''}`}></i>
         </button>
         
@@ -560,22 +606,35 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             className="pl-1"
           >
             <div className="grid grid-cols-1 gap-4">
-              {/* 资源1：电机结构3D模型 */}
-              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <Motor3DModel />
-              </div>
-              
 
-              {/* 资源3：故障诊断模拟器 */}
-              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <MotorDiagnosticSimulator />
-              </div>
               
 
             </div>
           </motion.div>
         )}
       </div>
+      
+      {/* 问问AI按钮 */}
+      {showAskAIButton && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="absolute z-40"
+          style={{
+            left: `${selectionPosition.x}px`,
+            top: `${selectionPosition.y}px`
+          }}
+        >
+          <button
+            onClick={handleAskAI}
+            className="bg-[var(--brand-pink)] text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors flex items-center text-sm whitespace-nowrap min-w-[80px] justify-center"
+          >
+            <i className="fa-solid fa-robot mr-1"></i>
+            问问AI
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }

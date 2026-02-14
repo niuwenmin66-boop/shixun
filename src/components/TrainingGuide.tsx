@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import MotorDismantlingQuiz from './MotorAnimation';
 
 // 图片URL常量定义
 const trainingImage = "https://space.coze.cn/api/coze_space/gen_image?image_size=landscape_16_9&prompt=%E6%96%B0%E8%83%BD%E6%BA%90%E6%B1%BD%E8%BD%A6%E7%BB%B4%E4%BF%AE%E8%AE%AD%E7%BB%83%E5%9C%BA%E6%99%AF%EF%BC%8C%E6%9C%BA%E6%A2%B0%E8%BD%A6%E9%97%B4%EF%BC%8C%E4%B8%93%E4%B8%9A%E8%AE%BE%E5%A4%87%EF%BC%8C%E6%8A%80%E6%9C%AF%E4%BA%BA%E5%91%98%E5%9C%A8%E6%93%8D%E4%BD%9C&sign=42db5087903a8d144b64f067c76a5762";
@@ -44,6 +45,7 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
     preparation: true,
     steps: true,
     conclusion: true,
+    quiz: true,
   });
   
   // 放大图片预览状态
@@ -988,6 +990,31 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 <i className="fa-solid fa-check-circle text-[var(--success-green)] mt-1 mr-3"></i>
                 <p className="text-[var(--text-primary)]"><strong>记录填写：</strong>填写实训记录，注明拆卸过程中遇到的问题、易损件更换情况及操作体会。</p>
               </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* 小练习 */}
+      <div className="mb-6">
+        <button
+          onClick={() => toggleSection('quiz')}
+          className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
+        >
+          <span>小练习</span>
+          <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.quiz ? 'transform rotate-180' : ''}`}></i>
+        </button>
+        
+        {expandedSections.quiz && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="pl-1"
+          >
+            <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              <MotorDismantlingQuiz />
             </div>
           </motion.div>
         )}
