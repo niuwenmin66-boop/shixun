@@ -410,215 +410,6 @@ export default function Profile() {
           return '';
         }
       },
-      graphic: [
-        {
-          type: 'group',
-          left: 10,
-          top: 20,
-          children: [
-            // 面板背景
-            {
-              type: 'rect',
-              shape: {
-                width: 150,
-                height: 200
-              },
-              style: {
-                fill: 'white',
-                stroke: '#ddd',
-                lineWidth: 1
-              }
-            },
-            // 标题
-            {
-              type: 'text',
-              left: 15,
-              top: 15,
-              style: {
-                text: '技能掌握情况',
-                fontSize: 14,
-                fontWeight: 'bold',
-                fill: '#333'
-              }
-            },
-            // 已精通
-            {
-              type: 'group',
-              left: 15,
-              top: 45,
-              children: [
-                {
-                  type: 'circle',
-                  shape: {
-                    cx: 0,
-                    cy: 0,
-                    r: 6
-                  },
-                  style: {
-                    fill: '#722ed1'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('mastered');
-                  }
-                },
-                {
-                  type: 'text',
-                  left: 15,
-                  top: 0,
-                  style: {
-                    text: `已精通 (${skillStatusCount.mastered})`,
-                    fontSize: 12,
-                    fill: filterOptions.mastered ? '#333' : '#999'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('mastered');
-                  }
-                }
-              ]
-            },
-            // 已掌握
-            {
-              type: 'group',
-              left: 15,
-              top: 75,
-              children: [
-                {
-                  type: 'circle',
-                  shape: {
-                    cx: 0,
-                    cy: 0,
-                    r: 6
-                  },
-                  style: {
-                    fill: '#1890ff'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('good');
-                  }
-                },
-                {
-                  type: 'text',
-                  left: 15,
-                  top: 0,
-                  style: {
-                    text: `已掌握 (${skillStatusCount.good})`,
-                    fontSize: 12,
-                    fill: filterOptions.good ? '#333' : '#999'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('good');
-                  }
-                }
-              ]
-            },
-            // 一般弱项
-            {
-              type: 'group',
-              left: 15,
-              top: 105,
-              children: [
-                {
-                  type: 'circle',
-                  shape: {
-                    cx: 0,
-                    cy: 0,
-                    r: 6
-                  },
-                  style: {
-                    fill: '#faad14'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('weak');
-                  }
-                },
-                {
-                  type: 'text',
-                  left: 15,
-                  top: 0,
-                  style: {
-                    text: `一般弱项 (${skillStatusCount.weak})`,
-                    fontSize: 12,
-                    fill: filterOptions.weak ? '#333' : '#999'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('weak');
-                  }
-                }
-              ]
-            },
-            // 严重弱项
-            {
-              type: 'group',
-              left: 15,
-              top: 135,
-              children: [
-                {
-                  type: 'circle',
-                  shape: {
-                    cx: 0,
-                    cy: 0,
-                    r: 6
-                  },
-                  style: {
-                    fill: '#f5222d'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('veryWeak');
-                  }
-                },
-                {
-                  type: 'text',
-                  left: 15,
-                  top: 0,
-                  style: {
-                    text: `严重弱项 (${skillStatusCount.veryWeak})`,
-                    fontSize: 12,
-                    fill: filterOptions.veryWeak ? '#333' : '#999'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('veryWeak');
-                  }
-                }
-              ]
-            },
-            // 未学习
-            {
-              type: 'group',
-              left: 15,
-              top: 165,
-              children: [
-                {
-                  type: 'circle',
-                  shape: {
-                    cx: 0,
-                    cy: 0,
-                    r: 6
-                  },
-                  style: {
-                    fill: '#bfbfbf'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('notLearned');
-                  }
-                },
-                {
-                  type: 'text',
-                  left: 15,
-                  top: 0,
-                  style: {
-                    text: `未学习 (${skillStatusCount.notLearned})`,
-                    fontSize: 12,
-                    fill: filterOptions.notLearned ? '#333' : '#999'
-                  },
-                  onclick: function() {
-                    (window as any).toggleFilter('notLearned');
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ],
       animationDurationUpdate: 1500,
       animationEasingUpdate: 'cubicInOut',
       series: [
@@ -633,10 +424,7 @@ export default function Profile() {
             itemStyle: {
               color: statusColorMap[node.status as SkillStatus]
             },
-            symbolSize: node.level === 'L0' ? 50 : node.level === 'L1' ? 40 : 30,
-            // 设置初始位置，避免节点出现在左上角的技能掌握情况面板区域
-            x: Math.random() * 800 + 200, // 从200开始，避开左侧面板
-            y: Math.random() * 400 + 250  // 从250开始，避上面板
+            symbolSize: node.level === 'L0' ? 50 : node.level === 'L1' ? 40 : 30
           })),
           links: filteredLinks,
           roam: true,
@@ -994,7 +782,10 @@ export default function Profile() {
     <div className="p-6 h-[calc(100vh-100px)] max-w-7xl mx-auto">
       {/* 学习概况数据区 */}
       <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 mb-6">
-        <h2 className="text-xl font-medium text-[var(--text-primary)] mb-6">学习概况</h2>
+        <div className="mb-6 text-center">
+          <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">学习概况</h2>
+          <p className="text-sm text-[var(--text-secondary)]">全方位追踪学习进度 · 精准掌握技能分布 · 个性化推荐学习路径</p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {/* 累计学习时长 */}
           <div className="bg-[var(--bg-primary)] rounded-[12px] p-4">
@@ -1148,6 +939,61 @@ export default function Profile() {
             <div className="flex items-center bg-[var(--bg-primary)] rounded-[8px] p-2 shadow-sm">
               <i className="fa-solid fa-circle-info text-[var(--text-secondary)] mr-2"></i>
               <p className="text-xs text-[var(--text-secondary)]">点击技能点，可查看掌握程度，AI提供个性化学习建议</p>
+            </div>
+          </div>
+          {/* 技能掌握情况筛选面板 */}
+          <div className="bg-[var(--bg-primary)] rounded-[12px] p-4 mb-4">
+            <div className="flex flex-wrap gap-6">
+              {/* 已精通 */}
+              <div 
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setFilterOptions(prev => ({ ...prev, mastered: !prev.mastered }))}
+              >
+                <div className={`w-3 h-3 rounded-full mr-2 ${filterOptions.mastered ? 'bg-[#722ed1]' : 'bg-[#722ed1] opacity-30'}`}></div>
+                <span className={`text-sm ${filterOptions.mastered ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                  已精通 ({skillStatusCount.mastered})
+                </span>
+              </div>
+              {/* 已掌握 */}
+              <div 
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setFilterOptions(prev => ({ ...prev, good: !prev.good }))}
+              >
+                <div className={`w-3 h-3 rounded-full mr-2 ${filterOptions.good ? 'bg-[#1890ff]' : 'bg-[#1890ff] opacity-30'}`}></div>
+                <span className={`text-sm ${filterOptions.good ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                  已掌握 ({skillStatusCount.good})
+                </span>
+              </div>
+              {/* 一般弱项 */}
+              <div 
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setFilterOptions(prev => ({ ...prev, weak: !prev.weak }))}
+              >
+                <div className={`w-3 h-3 rounded-full mr-2 ${filterOptions.weak ? 'bg-[#faad14]' : 'bg-[#faad14] opacity-30'}`}></div>
+                <span className={`text-sm ${filterOptions.weak ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                  一般弱项 ({skillStatusCount.weak})
+                </span>
+              </div>
+              {/* 严重弱项 */}
+              <div 
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setFilterOptions(prev => ({ ...prev, veryWeak: !prev.veryWeak }))}
+              >
+                <div className={`w-3 h-3 rounded-full mr-2 ${filterOptions.veryWeak ? 'bg-[#f5222d]' : 'bg-[#f5222d] opacity-30'}`}></div>
+                <span className={`text-sm ${filterOptions.veryWeak ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                  严重弱项 ({skillStatusCount.veryWeak})
+                </span>
+              </div>
+              {/* 未学习 */}
+              <div 
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setFilterOptions(prev => ({ ...prev, notLearned: !prev.notLearned }))}
+              >
+                <div className={`w-3 h-3 rounded-full mr-2 ${filterOptions.notLearned ? 'bg-[#bfbfbf]' : 'bg-[#bfbfbf] opacity-30'}`}></div>
+                <span className={`text-sm ${filterOptions.notLearned ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                  未学习 ({skillStatusCount.notLearned})
+                </span>
+              </div>
             </div>
           </div>
           <div ref={chartRef} style={{ width: '100%', height: '600px' }}></div>
