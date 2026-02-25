@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import * as pdfjsLib from 'pdfjs-dist';
+import { motion } from 'framer-motion';
 import MotorParameterCalculator from './MotorParameterCalculator';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import AIAssistant from './AIAssistant';
 
 // 技能状态类型
 type SkillStatus = 'mastered' | 'good' | 'weak' | 'veryWeak' | 'notLearned';
@@ -45,6 +47,10 @@ export default function Profile() {
   const [selectedResource, setSelectedResource] = useState<any>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
+  
+  // AI小助手展开/收起状态
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
 
   // 学习概况数据
   const studyOverviewData = {
@@ -1436,6 +1442,34 @@ export default function Profile() {
           </div>
         </div>
       )}
+      
+      {/* AI实训小助手入口 */}
+      <div className="fixed bottom-6 right-12 z-40">
+        {/* 展开/收起按钮 */}
+        <motion.button
+          onClick={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
+          className="bg-[var(--brand-pink)] text-white p-4 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors z-50"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          style={{ position: 'absolute', bottom: 0, right: 0 }}
+        >
+          <i className={`fa-solid ${isAIAssistantOpen ? 'fa-times' : 'fa-robot'} text-xl`}></i>
+        </motion.button>
+        
+        {/* AI小助手面板 */}
+        {isAIAssistantOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-lg shadow-xl w-80 h-[calc(100vh-120px)] overflow-hidden"
+            style={{ position: 'absolute', bottom: '70px', right: 0 }}
+          >
+            <AIAssistant selectedText={selectedText} />
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

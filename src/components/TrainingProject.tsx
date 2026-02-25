@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import AIAssistant from './AIAssistant';
 
 // 实训项目资源数据
 const trainingProjects = [
@@ -45,6 +46,10 @@ const trainingProjects = [
 export default function TrainingProject() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentResource, setCurrentResource] = useState<typeof trainingProjects[0] | null>(null);
+  
+  // AI小助手展开/收起状态
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
 
   const handleOpenModal = (resource: typeof trainingProjects[0]) => {
     setCurrentResource(resource);
@@ -72,83 +77,61 @@ export default function TrainingProject() {
   };
 
   return (
-    <div className="h-full">
-      {/* 白色卡片容器 */}
-      <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-[calc(100vh-100px)] overflow-y-auto max-w-5xl mx-auto">
-        {/* 模块头部区 */}
-        <div className="mb-8 text-center">
-          <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">6大真实操作场景 · 项目驱动式学习 · 技能实战一体化提升</h2>
-        </div>
+    <div className="p-6 h-[calc(100vh-100px)] max-w-6xl mx-auto">
+      {/* 模块头部区 */}
+      <div className="mb-8 text-center">
+        <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">6大真实操作场景 · 项目驱动式学习 · 技能实战一体化提升</h2>
+      </div>
 
-        {/* 资源卡片网格区 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trainingProjects.map((resource) => (
-            <motion.div
-              key={resource.id}
-              whileHover={{
-                scale: 1.02,
-                boxShadow: '0 12px 32px rgba(255,143,163,0.16)'
-              }}
-              whileTap={{ scale: 0.98 }}
-              className={`bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] overflow-hidden cursor-${resource.isClickable ? 'pointer' : 'default'}`}
-              onClick={() => handleResourceClick(resource)}
-            >
-              {/* 资源封面图 */}
-              <div className="relative h-48">
-                <motion.img 
-                  src={resource.image} 
-                  alt={resource.title} 
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
-                />
+      {/* 资源卡片网格区 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {trainingProjects.map((resource) => (
+          <motion.div
+            key={resource.id}
+            whileHover={{
+              scale: 1.02,
+              boxShadow: '0 12px 32px rgba(255,143,163,0.16)'
+            }}
+            whileTap={{ scale: 0.98 }}
+            className={`bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] overflow-hidden cursor-${resource.isClickable ? 'pointer' : 'default'}`}
+            onClick={() => handleResourceClick(resource)}
+          >
+            {/* 资源封面图 */}
+            <div className="relative h-48">
+              <motion.img 
+                src={resource.image} 
+                alt={resource.title} 
+                className="w-full h-full object-cover"
+                loading="lazy"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+
+            {/* 卡片内容 */}
+            <div className="p-4">
+              {/* 标题 */}
+              <h3 className="text-base font-medium text-[var(--text-primary)] mb-1 line-clamp-2">
+                {resource.title}
+              </h3>
+
+              {/* 主按钮 */}
+              <div className="flex justify-end">
+                <button
+                  onClick={(e) => handleStartClick(e, resource)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    resource.isClickable 
+                      ? 'bg-[var(--brand-pink)] text-white hover:bg-[var(--brand-pink)]/90'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  disabled={!resource.isClickable}
+                >
+                  开始实验
+                </button>
               </div>
-
-              {/* 卡片内容 */}
-              <div className="p-4">
-                {/* 标题 */}
-                <h3 className="text-base font-medium text-[var(--text-primary)] mb-1 line-clamp-2">
-                  {resource.title}
-                </h3>
-
-                {/* 主按钮 */}
-                <div className="flex justify-end">
-                  <button
-                    onClick={(e) => handleStartClick(e, resource)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      resource.isClickable 
-                        ? 'bg-[var(--brand-pink)] text-white hover:bg-[var(--brand-pink)]/90'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                    disabled={!resource.isClickable}
-                  >
-                    开始实验
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        
-        {/* 使用说明 */}
-        <div className="mt-8 p-4 bg-[var(--bg-primary)] rounded-lg">
-          <h3 className="text-lg font-medium mb-2 text-[var(--text-primary)]">使用说明</h3>
-          <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-            <li className="flex items-start">
-              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-              <span>实训项目模块包含了新能源汽车各系统的真实操作训练，帮助学生掌握实际操作技能。</span>
-            </li>
-            <li className="flex items-start">
-              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-              <span>所有实训项目资源正在准备中，将根据课程进度陆续开放。</span>
-            </li>
-            <li className="flex items-start">
-              <i className="fa-solid fa-circle-info text-[var(--brand-pink)] mt-1 mr-2"></i>
-              <span>实训项目需在指导教师的监督下进行，确保操作安全和规范。</span>
-            </li>
-          </ul>
-        </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
       {/* 实训弹窗 */}
@@ -186,6 +169,34 @@ export default function TrainingProject() {
           </motion.div>
         </motion.div>
       )}
+      
+      {/* AI实训小助手入口 */}
+      <div className="fixed bottom-6 right-12 z-40">
+        {/* 展开/收起按钮 */}
+        <motion.button
+          onClick={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
+          className="bg-[var(--brand-pink)] text-white p-4 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors z-50"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          style={{ position: 'absolute', bottom: 0, right: 0 }}
+        >
+          <i className={`fa-solid ${isAIAssistantOpen ? 'fa-times' : 'fa-robot'} text-xl`}></i>
+        </motion.button>
+        
+        {/* AI小助手面板 */}
+        {isAIAssistantOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-lg shadow-xl w-80 h-[calc(100vh-120px)] overflow-hidden"
+            style={{ position: 'absolute', bottom: '70px', right: 0 }}
+          >
+            <AIAssistant selectedText={selectedText} />
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

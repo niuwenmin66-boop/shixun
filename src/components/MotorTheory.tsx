@@ -32,6 +32,20 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
   // 放大图片预览状态
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
+  // 练习题目状态
+  const [exerciseAnswers, setExerciseAnswers] = useState({
+    q1: '',
+    q2: '',
+    q3: ''
+  });
+  
+  // 练习结果状态
+  const [exerciseResults, setExerciseResults] = useState({
+    q1: null as boolean | null,
+    q2: null as boolean | null,
+    q3: null as boolean | null
+  });
+  
   // 容器引用
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -133,6 +147,45 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
+    }));
+  };
+  
+  // 处理练习答案提交
+  const handleExerciseSubmit = (questionId: string, answer: string) => {
+    // 更新答案状态
+    setExerciseAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+    
+    // 判断答案是否正确
+    let isCorrect = false;
+    switch (questionId) {
+      case 'q1':
+        isCorrect = answer === 'q1c'; // 120°
+        break;
+      case 'q2':
+        isCorrect = answer === 'q2a'; // 正确
+        break;
+      case 'q3':
+        isCorrect = answer.toLowerCase() === '60f/p' || answer.toLowerCase() === '60*f/p' || answer.toLowerCase() === '60f÷p'; // 60f/p
+        break;
+      default:
+        isCorrect = false;
+    }
+    
+    // 更新结果状态
+    setExerciseResults(prev => ({
+      ...prev,
+      [questionId]: isCorrect
+    }));
+  };
+  
+  // 处理填空题输入变化
+  const handleFillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExerciseAnswers(prev => ({
+      ...prev,
+      q3: e.target.value
     }));
   };
   
@@ -680,10 +733,109 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="grid grid-cols-1 gap-4">
-
+            <div className="grid grid-cols-1 gap-6">
+              {/* 练习1：选择题 */}
+              <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)] shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="font-medium mb-3 text-[var(--text-primary)] flex items-center">
+                  <span className="bg-[var(--brand-pink)] text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">1</span>
+                  选择题：交流异步电机的定子绕组通入相位差多少度的交流电，才能产生旋转磁场？
+                </h4>
+                <div className="space-y-2">
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1a' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1a" className="mr-2" checked={exerciseAnswers.q1 === 'q1a'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1a' }))} />
+                    <label htmlFor="q1a" className="text-[var(--text-primary)]">60°</label>
+                  </div>
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1b' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1b" className="mr-2" checked={exerciseAnswers.q1 === 'q1b'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1b' }))} />
+                    <label htmlFor="q1b" className="text-[var(--text-primary)]">90°</label>
+                  </div>
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1c' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1c" className="mr-2" checked={exerciseAnswers.q1 === 'q1c'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1c' }))} />
+                    <label htmlFor="q1c" className="text-[var(--text-primary)]">120°</label>
+                  </div>
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1d' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1d" className="mr-2" checked={exerciseAnswers.q1 === 'q1d'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1d' }))} />
+                    <label htmlFor="q1d" className="text-[var(--text-primary)]">180°</label>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-[var(--light-pink)]">
+                  <button 
+                    className="px-4 py-2 bg-[var(--brand-pink)] text-white rounded-lg hover:bg-[var(--brand-pink)]/90 transition-colors text-sm"
+                    onClick={() => handleExerciseSubmit('q1', exerciseAnswers.q1)}
+                    disabled={!exerciseAnswers.q1}
+                  >
+                    提交答案
+                  </button>
+                  {exerciseResults.q1 !== null && (
+                    <div className={`mt-2 p-2 rounded-lg ${exerciseResults.q1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {exerciseResults.q1 ? '回答正确！' : '回答错误，正确答案是：120°'}
+                    </div>
+                  )}
+                </div>
+              </div>
               
-
+              {/* 练习2：判断题 */}
+              <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)] shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="font-medium mb-3 text-[var(--text-primary)] flex items-center">
+                  <span className="bg-[var(--brand-pink)] text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">2</span>
+                  判断题：异步电机的转子转速总是低于同步转速。
+                </h4>
+                <div className="flex space-x-4">
+                  <div className={`flex items-center p-3 rounded-lg cursor-pointer ${exerciseAnswers.q2 === 'q2a' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q2" id="q2a" className="mr-2" checked={exerciseAnswers.q2 === 'q2a'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q2: 'q2a' }))} />
+                    <label htmlFor="q2a" className="text-[var(--text-primary)]">正确</label>
+                  </div>
+                  <div className={`flex items-center p-3 rounded-lg cursor-pointer ${exerciseAnswers.q2 === 'q2b' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q2" id="q2b" className="mr-2" checked={exerciseAnswers.q2 === 'q2b'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q2: 'q2b' }))} />
+                    <label htmlFor="q2b" className="text-[var(--text-primary)]">错误</label>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-[var(--light-pink)]">
+                  <button 
+                    className="px-4 py-2 bg-[var(--brand-pink)] text-white rounded-lg hover:bg-[var(--brand-pink)]/90 transition-colors text-sm"
+                    onClick={() => handleExerciseSubmit('q2', exerciseAnswers.q2)}
+                    disabled={!exerciseAnswers.q2}
+                  >
+                    提交答案
+                  </button>
+                  {exerciseResults.q2 !== null && (
+                    <div className={`mt-2 p-2 rounded-lg ${exerciseResults.q2 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {exerciseResults.q2 ? '回答正确！' : '回答错误，正确答案是：正确'}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* 练习3：填空题 */}
+              <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)] shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="font-medium mb-3 text-[var(--text-primary)] flex items-center">
+                  <span className="bg-[var(--brand-pink)] text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">3</span>
+                  填空题：同步转速的计算公式是 n₁ = ______，其中 f 为电源频率，p 为电机极对数。
+                </h4>
+                <div className="mb-3">
+                  <input 
+                    type="text" 
+                    className="w-full p-2 border border-[var(--light-pink)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--brand-pink)]"
+                    placeholder="请输入答案"
+                    value={exerciseAnswers.q3}
+                    onChange={handleFillInputChange}
+                  />
+                </div>
+                <div className="mt-3 pt-3 border-t border-[var(--light-pink)]">
+                  <button 
+                    className="px-4 py-2 bg-[var(--brand-pink)] text-white rounded-lg hover:bg-[var(--brand-pink)]/90 transition-colors text-sm"
+                    onClick={() => handleExerciseSubmit('q3', exerciseAnswers.q3)}
+                    disabled={!exerciseAnswers.q3.trim()}
+                  >
+                    提交答案
+                  </button>
+                  {exerciseResults.q3 !== null && (
+                    <div className={`mt-2 p-2 rounded-lg ${exerciseResults.q3 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {exerciseResults.q3 ? '回答正确！' : '回答错误，正确答案是：60f/p'}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
