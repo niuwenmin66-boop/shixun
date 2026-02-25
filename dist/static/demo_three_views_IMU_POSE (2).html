@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>三视图演示：Pose + IMU + 融合</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .layout {
+            display: grid;
+            grid-template-columns: 250px 1fr 1fr 1fr;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .control-panel {
+            background: #0f1419;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .view-panel {
+            background: #0f0f1e;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .view-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .view-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        #poseCanvas, #imuCanvas, #fusionCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #poseCanvas {
+            background: black;
+        }
+        
+        video {
+            display: none;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .section {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+        
+        .section h3 {
+            color: #3498db;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.85em;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .data-label { color: #95a5a6; }
+        .data-value {
+            font-weight: bold;
+            color: #2ecc71;
+            font-family: monospace;
+        }
+        
+        .status {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            display: inline-block;
+        }
+        .status.active { background: #2ecc71; }
+        .status.inactive { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 左侧控制面板 -->
+        <div class="control-panel">
+            <h2>🎯 控制台</h2>
+            
+            <div class="section">
+                <h3>📱 设备</h3>
+                <button class="btn btn-primary" onclick="startPose()">📹 启动Pose</button>
+                <button class="btn btn-primary" onclick="connectIMU()">🎮 连接IMU</button>
+                <div style="margin-top:8px;">
+                    <div class="data-row">
+                        <span>Pose</span>
+                        <span class="status inactive" id="poseStatus">未启动</span>
+                    </div>
+                    <div class="data-row">
+                        <span>IMU</span>
+                        <span class="status inactive" id="imuStatus">未连接</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>🔧 校准</h3>
+                <button class="btn btn-warning" onclick="calibrateIMU()">校准IMU零点</button>
+                <button class="btn btn-warning" onclick="calibrateFusion()">校准融合</button>
+                <div id="calibStatus" style="margin-top:8px; font-size:0.8em; color:#f39c12;"></div>
+            </div>
+            
+            <div class="section">
+                <h3>🧭 IMU姿态</h3>
+                <div class="data-row">
+                    <span class="data-label">Roll</span>
+                    <span class="data-value" id="roll">0.0°</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Pitch</span>
+                    <span class="data-value" id="pitch">0.0°</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Yaw</span>
+                    <span class="data-value" id="yaw">0.0°</span>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>💡 说明</h3>
+                <div style="font-size:0.8em; line-height:1.5;">
+                    <strong>左：Pose检测</strong><br>
+                    33个全身关键点<br>
+                    手腕位置准确<br><br>
+                    
+                    <strong>中：IMU 3D</strong><br>
+                    手部模型姿态<br>
+                    旋转IMU观察<br><br>
+                    
+                    <strong>右：融合</strong><br>
+                    位置来自Pose<br>
+                    姿态来自IMU
+                </div>
+            </div>
+        </div>
+        
+        <!-- 视图1: Pose检测 -->
+        <div class="view-panel">
+            <div class="view-title" style="background: rgba(231, 76, 60, 0.9);">
+                📹 MediaPipe Pose (33点)
+            </div>
+            <canvas id="poseCanvas"></canvas>
+            <div class="view-info" id="poseInfo">等待启动...</div>
+        </div>
+        
+        <!-- 视图2: IMU 3D -->
+        <div class="view-panel">
+            <div class="view-title" style="background: rgba(155, 89, 182, 0.9);">
+                🎮 IMU 3D模型
+            </div>
+            <canvas id="imuCanvas"></canvas>
+            <div class="view-info" id="imuInfo">等待连接...</div>
+        </div>
+        
+        <!-- 视图3: 融合 -->
+        <div class="view-panel">
+            <div class="view-title" style="background: rgba(46, 204, 113, 0.9);">
+                🎯 融合模式
+            </div>
+            <canvas id="fusionCanvas"></canvas>
+            <div class="view-info" id="fusionInfo">等待校准...</div>
+        </div>
+    </div>
+    
+    <video id="video" autoplay></video>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        // ========== 全局变量 ==========
+        const SERVICE_UUID = '0000ffe5-0000-1000-8000-00805f9a34fb';
+        const NOTIFY_CHAR_UUID = '0000ffe4-0000-1000-8000-00805f9a34fb';
+        
+        let pose = null;
+        let hands = null;
+        let camera = null;
+        let imuChar = null;
+        
+        // Three.js
+        let scene, camera3d, renderer, handModel;
+        let scene2, camera3d2, renderer2, handModel2;
+        
+        // 数据
+        const poseData = {
+            detected: false,
+            leftWrist: null,
+            rightWrist: null
+        };
+        
+        const handsData = {
+            detected: false,
+            landmarks: null
+        };
+        
+        const imuData = {
+            roll: 0, pitch: 0, yaw: 0
+        };
+        
+        const imuOffset = {
+            roll: 0, pitch: 0, yaw: 0
+        };
+        
+        const fusionOffset = {
+            x: 0, y: 0
+        };
+        
+        // ========== MediaPipe Pose + Hands ==========
+        async function startPose() {
+            try {
+                document.getElementById('poseStatus').textContent = '启动中';
+                
+                const video = document.getElementById('video');
+                
+                // 初始化Hands
+                hands = new Hands({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                    }
+                });
+                
+                hands.setOptions({
+                    maxNumHands: 2,
+                    modelComplexity: 1,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+                
+                hands.onResults(onHandsResults);
+                
+                // 初始化Pose
+                pose = new Pose({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+                    }
+                });
+                
+                pose.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+                
+                pose.onResults(onPoseResults);
+                
+                // 启动摄像头（照搬你的方式）
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 1280, height: 720 } 
+                });
+                video.srcObject = stream;
+                
+                await new Promise(resolve => {
+                    video.onloadedmetadata = () => {
+                        resolve();
+                    };
+                });
+                
+                // 使用Camera工具（照搬你的方式）
+                camera = new Camera(video, {
+                    onFrame: async () => {
+                        await hands.send({image: video});
+                        await pose.send({image: video});
+                    },
+                    width: 1280,
+                    height: 720
+                });
+                
+                await camera.start();
+                
+                document.getElementById('poseStatus').textContent = '运行中';
+                document.getElementById('poseStatus').className = 'status active';
+                
+                console.log('✅ Pose + Hands已启动');
+                
+            } catch (e) {
+                console.error('启动失败:', e);
+                alert('启动失败: ' + e.message);
+            }
+        }
+        
+        function onHandsResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                handsData.detected = true;
+                handsData.landmarks = results.multiHandLandmarks;
+            } else {
+                handsData.detected = false;
+            }
+        }
+        
+        function onPoseResults(results) {
+            // 更新Pose数据
+            if (results.poseLandmarks) {
+                poseData.detected = true;
+                poseData.leftWrist = results.poseLandmarks[15];
+                poseData.rightWrist = results.poseLandmarks[16];
+            } else {
+                poseData.detected = false;
+                poseData.leftWrist = null;
+                poseData.rightWrist = null;
+            }
+            
+            // 绘制Pose视图（同时绘制Hands）
+            drawPose(results);
+            
+            // 在Pose画面上叠加融合指示（如果已校准）
+            if (fusionOffset.x !== 0 || fusionOffset.y !== 0) {
+                if (poseData.detected && poseData.rightWrist) {
+                    const mirroredX = 1 - poseData.rightWrist.x;
+                    drawFusionOverlay(mirroredX, poseData.rightWrist.y);
+                }
+            }
+        }
+        
+        function drawPose(results) {
+            const canvas = document.getElementById('poseCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 动态设置canvas实际尺寸
+            if (canvas.width !== results.image.width || canvas.height !== results.image.height) {
+                canvas.width = results.image.width;
+                canvas.height = results.image.height;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 水平翻转（镜像）
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(results.image, -canvas.width, 0, canvas.width, canvas.height);
+            ctx.restore();
+            
+            // 绘制Pose骨骼
+            if (results.poseLandmarks) {
+                const landmarks = results.poseLandmarks;
+                
+                // 绘制连线
+                const connections = [
+                    [11,12],[11,13],[13,15],[12,14],[14,16],
+                    [11,23],[12,24],[23,24],
+                    [23,25],[25,27],[24,26],[26,28]
+                ];
+                
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 3;
+                
+                connections.forEach(([s, e]) => {
+                    const start = landmarks[s];
+                    const end = landmarks[e];
+                    
+                    if (start && end && start.visibility > 0.5 && end.visibility > 0.5) {
+                        ctx.beginPath();
+                        // 镜像翻转x坐标
+                        ctx.moveTo((1 - start.x) * canvas.width, start.y * canvas.height);
+                        ctx.lineTo((1 - end.x) * canvas.width, end.y * canvas.height);
+                        ctx.stroke();
+                    }
+                });
+                
+                // 绘制关键点
+                landmarks.forEach((p, idx) => {
+                    if (p.visibility > 0.5) {
+                        const x = (1 - p.x) * canvas.width;  // 镜像翻转
+                        const y = p.y * canvas.height;
+                        
+                        if (idx === 15 || idx === 16) {
+                            // 手腕 - 更大更明显
+                            ctx.fillStyle = '#ff0000';
+                            ctx.beginPath();
+                            ctx.arc(x, y, 12, 0, 2 * Math.PI);
+                            ctx.fill();
+                            
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(x, y, 18, 0, 2 * Math.PI);
+                            ctx.stroke();
+                            
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 16px Arial';
+                            ctx.fillText(idx === 15 ? '左手腕' : '右手腕', x + 25, y - 15);
+                        } else {
+                            ctx.fillStyle = '#00ff00';
+                            ctx.beginPath();
+                            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                            ctx.fill();
+                        }
+                    }
+                });
+            }
+            
+            // 绘制Hands骨骼（叠加）
+            if (handsData.detected && handsData.landmarks) {
+                handsData.landmarks.forEach(handLandmarks => {
+                    // 绘制手部连线
+                    const handConnections = [
+                        [0,1],[1,2],[2,3],[3,4],  // 拇指
+                        [0,5],[5,6],[6,7],[7,8],  // 食指
+                        [0,9],[9,10],[10,11],[11,12],  // 中指
+                        [0,13],[13,14],[14,15],[15,16],  // 无名指
+                        [0,17],[17,18],[18,19],[19,20]   // 小指
+                    ];
+                    
+                    ctx.strokeStyle = '#ffff00';
+                    ctx.lineWidth = 2;
+                    
+                    handConnections.forEach(([s, e]) => {
+                        const start = handLandmarks[s];
+                        const end = handLandmarks[e];
+                        
+                        ctx.beginPath();
+                        // 镜像翻转
+                        ctx.moveTo((1 - start.x) * canvas.width, start.y * canvas.height);
+                        ctx.lineTo((1 - end.x) * canvas.width, end.y * canvas.height);
+                        ctx.stroke();
+                    });
+                    
+                    // 绘制手部关键点
+                    handLandmarks.forEach((p, idx) => {
+                        const x = (1 - p.x) * canvas.width;  // 镜像翻转
+                        const y = p.y * canvas.height;
+                        
+                        ctx.fillStyle = '#ffff00';
+                        ctx.beginPath();
+                        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                });
+            }
+            
+            // 更新信息显示
+            let info = '';
+            if (poseData.detected) {
+                info += `<strong style="color:#2ecc71;">✅ Pose: 检测到</strong><br>`;
+                info += `左手腕: (${(poseData.leftWrist.x*100).toFixed(0)}%, ${(poseData.leftWrist.y*100).toFixed(0)}%)<br>`;
+                info += `右手腕: (${(poseData.rightWrist.x*100).toFixed(0)}%, ${(poseData.rightWrist.y*100).toFixed(0)}%)<br>`;
+            } else {
+                info += `<strong style="color:#e74c3c;">❌ Pose: 未检测</strong><br>`;
+            }
+            
+            if (handsData.detected) {
+                info += `<strong style="color:#f1c40f;">✅ Hands: ${handsData.landmarks.length}只手</strong>`;
+            } else {
+                info += `<strong style="color:#95a5a6;">❌ Hands: 未检测</strong>`;
+            }
+            
+            document.getElementById('poseInfo').innerHTML = info;
+            
+            // 注意：融合叠加层在animate3D中绘制，这里不需要调用
+        }
+        
+        // ========== Three.js初始化 ==========
+        function initThreeJS() {
+            // IMU视图
+            const canvas1 = document.getElementById('imuCanvas');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f0f1e);
+            
+            camera3d = new THREE.PerspectiveCamera(75, canvas1.clientWidth / canvas1.clientHeight, 0.1, 1000);
+            camera3d.position.set(0, 1, 3);
+            camera3d.lookAt(0, 0.5, 0);
+            
+            renderer = new THREE.WebGLRenderer({ canvas: canvas1, antialias: true });
+            renderer.setSize(canvas1.clientWidth, canvas1.clientHeight);
+            
+            const grid = new THREE.GridHelper(10, 10);
+            scene.add(grid);
+            
+            const axes = new THREE.AxesHelper(2);
+            scene.add(axes);
+            
+            const geometry = new THREE.BoxGeometry(0.8, 0.2, 0.4);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x9b59b6,
+                transparent: true,
+                opacity: 0.9
+            });
+            handModel = new THREE.Mesh(geometry, material);
+            handModel.position.y = 0.5;
+            scene.add(handModel);
+            
+            const fingerGeom = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 16);
+            const fingerMat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+            const finger = new THREE.Mesh(fingerGeom, fingerMat);
+            finger.position.set(0.3, 0, 0);
+            finger.rotation.z = Math.PI / 2;
+            handModel.add(finger);
+            
+            const localAxes = new THREE.AxesHelper(0.5);
+            handModel.add(localAxes);
+            
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            
+            const ambient = new THREE.AmbientLight(0x404040);
+            scene.add(ambient);
+            
+            // 融合视图
+            const canvas2 = document.getElementById('fusionCanvas');
+            
+            scene2 = new THREE.Scene();
+            scene2.background = new THREE.Color(0x0f0f1e);
+            
+            camera3d2 = new THREE.PerspectiveCamera(75, canvas2.clientWidth / canvas2.clientHeight, 0.1, 1000);
+            camera3d2.position.set(0, 1, 3);
+            camera3d2.lookAt(0, 0.5, 0);
+            
+            renderer2 = new THREE.WebGLRenderer({ canvas: canvas2, antialias: true });
+            renderer2.setSize(canvas2.clientWidth, canvas2.clientHeight);
+            
+            const grid2 = new THREE.GridHelper(10, 10);
+            scene2.add(grid2);
+            
+            const axes2 = new THREE.AxesHelper(2);
+            scene2.add(axes2);
+            
+            const geometry2 = new THREE.BoxGeometry(0.8, 0.2, 0.4);
+            const material2 = new THREE.MeshPhongMaterial({ 
+                color: 0x2ecc71,
+                transparent: true,
+                opacity: 0.9
+            });
+            handModel2 = new THREE.Mesh(geometry2, material2);
+            handModel2.position.y = 0.5;
+            scene2.add(handModel2);
+            
+            const fingerGeom2 = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 16);
+            const fingerMat2 = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+            const finger2 = new THREE.Mesh(fingerGeom2, fingerMat2);
+            finger2.position.set(0.3, 0, 0);
+            finger2.rotation.z = Math.PI / 2;
+            handModel2.add(finger2);
+            
+            const localAxes2 = new THREE.AxesHelper(0.5);
+            handModel2.add(localAxes2);
+            
+            const light2 = new THREE.DirectionalLight(0xffffff, 1);
+            light2.position.set(5, 5, 5);
+            scene2.add(light2);
+            
+            const ambient2 = new THREE.AmbientLight(0x404040);
+            scene2.add(ambient2);
+            
+            animate3D();
+        }
+        
+        let debugFrameCount = 0;
+        
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            
+            // IMU视图：只显示姿态
+            const roll = (imuData.roll - imuOffset.roll) * Math.PI / 180;
+            const pitch = (imuData.pitch - imuOffset.pitch) * Math.PI / 180;
+            const yaw = (imuData.yaw - imuOffset.yaw) * Math.PI / 180;
+            
+            handModel.rotation.set(roll, pitch, yaw, 'ZYX');
+            handModel.position.set(0, 0.5, 0);
+            
+            // 融合视图：位置 + 姿态
+            if (poseData.detected && poseData.rightWrist) {
+                // 镜像后的坐标
+                const mirroredX = 1 - poseData.rightWrist.x;
+                
+                // 映射到3D空间
+                // X轴：左右移动手 → 3D模型左右移动
+                const x = (mirroredX - 0.5 - fusionOffset.x) * 6;
+                
+                // Y轴：上下移动手 → 3D模型上下移动
+                const y = -(poseData.rightWrist.y - 0.5 - fusionOffset.y) * 4;
+                
+                // Z轴：固定不变（不要深度影响）
+                const z = 0;
+                
+                handModel2.position.set(x, y, z);
+                
+                // 每100帧调试一次
+                debugFrameCount++;
+                if (debugFrameCount % 100 === 0) {
+                    console.log('融合3D位置:', x.toFixed(2), y.toFixed(2), z.toFixed(2));
+                }
+            }
+            
+            handModel2.rotation.set(roll, pitch, yaw, 'ZYX');
+            
+            renderer.render(scene, camera3d);
+            renderer2.render(scene2, camera3d2);
+        }
+        
+        // 在Pose视频上绘制融合模式的盒子位置指示
+        function drawFusionOverlay(mirroredX, wristY) {
+            const canvas = document.getElementById('poseCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (!canvas || !ctx) return;
+            
+            // 计算屏幕位置
+            const screenX = mirroredX * canvas.width;
+            const screenY = wristY * canvas.height;
+            
+            // 绘制3D盒子中心指示
+            ctx.save();
+            
+            // 外圈（绿色）
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 25, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // 内圈（绿色填充）
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 25, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 中心点
+            ctx.fillStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 十字线
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(screenX - 15, screenY);
+            ctx.lineTo(screenX + 15, screenY);
+            ctx.moveTo(screenX, screenY - 15);
+            ctx.lineTo(screenX, screenY + 15);
+            ctx.stroke();
+            
+            // 标签
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('3D盒子中心', screenX + 30, screenY - 10);
+            
+            ctx.restore();
+        }
+        
+        // ========== IMU ==========
+        async function connectIMU() {
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        { namePrefix: 'WT901' },
+                        { namePrefix: 'BS-BT' },
+                        { namePrefix: 'BS91' }
+                    ],
+                    optionalServices: [SERVICE_UUID]
+                });
+                
+                const srv = await device.gatt.connect();
+                await new Promise(r => setTimeout(r, 2000));
+                
+                const s = await srv.getPrimaryService(SERVICE_UUID);
+                imuChar = await s.getCharacteristic(NOTIFY_CHAR_UUID);
+                
+                await imuChar.startNotifications();
+                imuChar.addEventListener('characteristicvaluechanged', onIMUData);
+                
+                document.getElementById('imuStatus').textContent = '已连接';
+                document.getElementById('imuStatus').className = 'status active';
+                
+                console.log('✅ IMU已连接');
+                
+            } catch (e) {
+                alert('IMU连接失败: ' + e.message);
+            }
+        }
+        
+        function onIMUData(e) {
+            const d = new Uint8Array(e.target.value.buffer);
+            if (d.length !== 20 || d[0] !== 0x55 || d[1] !== 0x61) return;
+            
+            const roll_raw = ((d[15] << 8) | d[14]);
+            const pitch_raw = ((d[17] << 8) | d[16]);
+            const yaw_raw = ((d[19] << 8) | d[18]);
+            
+            imuData.roll = toInt16(roll_raw) / 32768 * 180;
+            imuData.pitch = toInt16(pitch_raw) / 32768 * 180;
+            imuData.yaw = toInt16(yaw_raw) / 32768 * 180;
+            
+            const roll = imuData.roll - imuOffset.roll;
+            const pitch = imuData.pitch - imuOffset.pitch;
+            const yaw = imuData.yaw - imuOffset.yaw;
+            
+            document.getElementById('roll').textContent = roll.toFixed(1) + '°';
+            document.getElementById('pitch').textContent = pitch.toFixed(1) + '°';
+            document.getElementById('yaw').textContent = yaw.toFixed(1) + '°';
+            
+            document.getElementById('imuInfo').innerHTML = 
+                `<strong style="color:#2ecc71;">Roll: ${roll.toFixed(1)}°</strong><br>` +
+                `Pitch: ${pitch.toFixed(1)}°<br>` +
+                `Yaw: ${yaw.toFixed(1)}°`;
+        }
+        
+        function toInt16(v) { return v > 32767 ? v - 65536 : v; }
+        
+        // ========== 校准 ==========
+        function calibrateIMU() {
+            if (!imuChar) {
+                alert('⚠️ 请先连接IMU传感器！');
+                return;
+            }
+            
+            imuOffset.roll = imuData.roll;
+            imuOffset.pitch = imuData.pitch;
+            imuOffset.yaw = imuData.yaw;
+            
+            document.getElementById('calibStatus').innerHTML = '✅ IMU已校准';
+            console.log('✅ IMU已校准');
+            
+            alert('✅ IMU角度已校准！\n\n当前姿态已设为0°参考点');
+        }
+        
+        function calibrateFusion() {
+            console.log('=== 开始融合校准 ===');
+            console.log('Pose检测状态:', poseData.detected);
+            console.log('右手腕数据:', poseData.rightWrist);
+            
+            if (!poseData.detected || !poseData.rightWrist) {
+                alert('⚠️ 请先启动Pose并检测到身体！\n\n确保右手在摄像头画面中');
+                return;
+            }
+            
+            if (!imuChar) {
+                alert('⚠️ 请先连接IMU传感器！');
+                return;
+            }
+            
+            // 记录当前右手腕位置作为中心点（镜像后的坐标）
+            const mirroredX = 1 - poseData.rightWrist.x;
+            fusionOffset.x = mirroredX - 0.5;
+            fusionOffset.y = poseData.rightWrist.y - 0.5;
+            
+            console.log('右手腕原始位置:', poseData.rightWrist.x.toFixed(3), poseData.rightWrist.y.toFixed(3));
+            console.log('镜像后X:', mirroredX.toFixed(3));
+            console.log('Offset X:', fusionOffset.x.toFixed(3), 'Y:', fusionOffset.y.toFixed(3));
+            
+            // 同时校准IMU
+            imuOffset.roll = imuData.roll;
+            imuOffset.pitch = imuData.pitch;
+            imuOffset.yaw = imuData.yaw;
+            
+            console.log('IMU Offset:', imuOffset);
+            
+            document.getElementById('calibStatus').innerHTML = 
+                '✅ 融合已校准<br>右手腕对齐';
+            
+            document.getElementById('fusionInfo').innerHTML = 
+                `<strong style="color:#2ecc71;">✅ 已校准</strong><br>` +
+                `现在移动右手观察3D模型<br>` +
+                `Offset: (${fusionOffset.x.toFixed(2)}, ${fusionOffset.y.toFixed(2)})`;
+            
+            console.log('=== 校准完成 ===');
+            
+            alert('✅ 融合校准完成！\n\n✓ 右手腕位置 → 3D模型中心\n✓ IMU姿态 → 0°参考\n\n现在移动右手，3D模型会跟随！');
+        }
+        
+        // ========== 初始化 ==========
+        window.addEventListener('load', () => {
+            initThreeJS();
+            console.log('✅ 三视图演示系统已加载');
+        });
+        
+        window.addEventListener('resize', () => {
+            if (renderer && camera3d) {
+                const canvas1 = document.getElementById('imuCanvas');
+                camera3d.aspect = canvas1.clientWidth / canvas1.clientHeight;
+                camera3d.updateProjectionMatrix();
+                renderer.setSize(canvas1.clientWidth, canvas1.clientHeight);
+            }
+            
+            if (renderer2 && camera3d2) {
+                const canvas2 = document.getElementById('fusionCanvas');
+                camera3d2.aspect = canvas2.clientWidth / canvas2.clientHeight;
+                camera3d2.updateProjectionMatrix();
+                renderer2.setSize(canvas2.clientWidth, canvas2.clientHeight);
+            }
+        });
+    </script>
+</body>
+</html>

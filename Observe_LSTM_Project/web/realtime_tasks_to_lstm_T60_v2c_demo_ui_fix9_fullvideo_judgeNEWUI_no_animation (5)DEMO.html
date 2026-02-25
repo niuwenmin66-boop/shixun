@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>智能实训室 - 动作识别系统</title>
+<style>
+  :root{
+    --primary: #00d4ff;
+    --primary-dark: #00a8cc;
+    --secondary: #0066ff;
+    --bg-main: #0a0e27;
+    --bg-card: #131829;
+    --bg-card-hover: #1a1f3a;
+    --border: rgba(0, 212, 255, 0.15);
+    --border-glow: rgba(0, 212, 255, 0.3);
+    --text-primary: #e8edf4;
+    --text-secondary: #8b95a8;
+    --text-muted: #5a6375;
+    --success: #00ff88;
+    --warning: #ffaa00;
+    --error: #ff4444;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    margin:0;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  /* 背景网格效果 */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* 静态背景 - 无动画 */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+  
+    50% { opacity: 0.8; transform: scale(1.1); }
+  }
+  
+  .page{
+    max-width:1400px;
+    margin:0 auto;
+    padding: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* 顶部标题栏 */
+  .hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    
+  }
+  
+    100% { background-position: 200% 0; }
+  }
+  
+  .hero > div:first-child {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .hero-label {
+    font-size: 12px;
+    color: var(--primary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .hero-label::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--primary);
+    
+  }
+  
+    50% { opacity: 0.3; }
+  }
+  
+  .hero-main-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 8px 0;
+    background: linear-gradient(135deg, var(--text-primary), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .hero-desc {
+    margin-top: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+  
+  .hero-desc b {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  
+  .hero > div:last-child {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  /* 控制栏 */
+  #ctrlBar, #modelBar, #sourceBar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: var(--shadow);
+  }
+  
+  /* 按钮样式 */
+  button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  button:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+  
+  button:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  button.primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+  }
+  
+  button.primary:hover {
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.6);
+  }
+  
+  button.ghost {
+    background: rgba(0, 212, 255, 0.05);
+    border-color: var(--border);
+  }
+  
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  button:disabled:hover {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+  
+  button:disabled::before {
+    display: none;
+  }
+  
+  /* 状态标签 */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(0, 212, 255, 0.08);
+    backdrop-filter: blur(10px);
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  
+  .pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+  }
+  
+  .pill.good {
+    border-color: rgba(0, 255, 136, 0.3);
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--success);
+  }
+  
+  .pill.good::before {
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+  }
+  
+  .pill.bad {
+    border-color: rgba(255, 68, 68, 0.3);
+    background: rgba(255, 68, 68, 0.1);
+    color: var(--error);
+  }
+  
+  .pill.bad::before {
+    background: var(--error);
+    box-shadow: 0 0 8px var(--error);
+  }
+  
+  .pill.uncertain {
+    border-color: rgba(255, 170, 0, 0.3);
+    background: rgba(255, 170, 0, 0.1);
+    color: var(--warning);
+  }
+  
+  .pill.uncertain::before {
+    background: var(--warning);
+    box-shadow: 0 0 8px var(--warning);
+  }
+  
+  /* 输入框 */
+  input[type="number"] {
+    width: 100px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  }
+  
+  /* 主内容区域 */
+  .row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 980px) {
+    .row { flex-wrap: wrap; }
+  }
+  
+  /* 视频展示区 */
+  .stage {
+    position: relative;
+    width: 720px;
+    max-width: 100%;
+    height: 540px;
+    max-height: 540px;
+    border: 2px solid var(--border-glow);
+    border-radius: 16px;
+    background: #000;
+    box-shadow: var(--shadow), var(--glow);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stage::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 200%;
+    border-radius: 16px;
+    z-index: -1;
+    
+    opacity: 0.5;
+  }
+  
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .stage video {
+    display: none !important;
+    position: absolute;
+    visibility: hidden;
+  }
+  
+  .stage canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+  }
+  
+  /* 输出信息区 */
+  pre {
+    margin: 0;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow);
+    max-height: 600px;
+    overflow-y: auto;
+    min-width: 320px;
+    max-width: 700px;
+  }
+  
+  pre::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  pre::-webkit-scrollbar-track {
+    background: var(--bg-main);
+    border-radius: 4px;
+  }
+  
+  pre::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+  }
+  
+  /* 模态框 */
+  #resultModal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 14, 39, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    padding: 16px;
+  }
+  
+  #resultModal > div {
+    width: min(540px, 100%);
+    background: #ffffff;
+    border: 2px solid var(--border-glow);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), var(--glow);
+    padding: 28px;
+    position: relative;
+    
+  }
+  
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  #resultModal > div > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  #resultModal > div > div:first-child > div:first-child {
+    flex: 1;
+  }
+  
+  #resultModal .modal-label {
+    font-size: 12px;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  
+  #modalTitle {
+    font-size: 28px;
+    font-weight: 900;
+    margin: 8px 0;
+    color: #000000 !important;
+  }
+  
+  #modalSub {
+    margin-top: 12px;
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* 弹窗内按钮颜色 */
+  #resultModal button.ghost {
+    background: #f0f0f0;
+    border-color: #cccccc;
+    color: #333333;
+  }
+  
+  #resultModal button.ghost:hover {
+    background: #e0e0e0;
+    border-color: #999999;
+  }
+  
+  #resultModal > div > div:last-child {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  
+  .dbgHidden {
+    display: none !important;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .page { padding: 16px; }
+    .hero { padding: 20px; }
+    .hero-main-title { font-size: 24px; }
+    #ctrlBar, #modelBar, #sourceBar { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="hero">
+  <div>
+    <div class="hero-label">智能实训系统 · AI Vision Module</div>
+    <div class="hero-main-title">动作识别与评估系统</div>
+    <div class="hero-desc">基于深度学习的实时动作识别技术，支持浏览器端运行，无需安装额外软件<br><span style="font-size:12px;color:var(--text-muted);">识别结果可用于 <b>通过/未通过（Pass/Fail）</b> 判定 · 本演示以"安装电机/拆卸电机"作为示例动作</span></div>
+  </div>
+  <div>
+    <span class="pill" id="srcPill">输入源：摄像头</span>
+    <span class="pill" id="stat">就绪</span>
+  </div>
+</div>
+<div id="ctrlBar">
+  <button id="btnStart" class="primary">开始识别</button>
+  <button id="btnStop" disabled>暂停</button>
+  <button id="btnChooseVideo" class="ghost">选择视频文件</button>
+  <input id="videoFile" type="file" accept="video/*" style="display:none"/>
+  <button id="btnAdv" class="ghost">高级设置</button>
+  <span class="pill" id="buf" style="display:none">T=60 buffer: 0/60</span>
+  <span class="pill" id="inf" style="display:none">infer: -</span>
+</div>
+
+<div id="modelBar" class="dbgHidden">
+  <span class="pill">阈值 TH_GOOD</span>
+  <input id="thGood" type="number" min="0" max="1" step="0.01" value="0.50" style="width:90px"/>
+  <span class="pill">阈值 TH_BAD</span>
+  <input id="thBad" type="number" min="0" max="1" step="0.01" value="0.50" style="width:90px"/>
+  <span class="pill">稳定窗口 W</span>
+  <input id="winW" type="number" min="5" max="60" step="1" value="15" style="width:90px"/>
+  <span class="pill">通过票数 K</span>
+  <input id="winK" type="number" min="1" max="60" step="1" value="10" style="width:90px"/>
+  <span class="pill" id="uiJudge">-</span>
+  <span class="pill" id="uiInferN">infer# 0</span>
+  <span class="pill dbgHidden" id="uiLastAt">最近识别: -</span>
+  <span class="pill dbgHidden" id="uiStats">统计: -</span>
+</div>
+
+<div id="sourceBar">
+  <span class="pill">模式</span>
+  <button id="btnCam" class="ghost">切换到摄像头</button>
+  <span class="pill" id="fileName">视频：未选择</span>
+  
+  <!-- Debug/研发入口：默认隐藏（保留代码，方便将来排查） -->
+  <input id="jsonFile" type="file" accept=".json,application/json" style="display:none"/>
+  <button id="btnRunJson" disabled style="display:none">Run JSON</button>
+</div>
+
+<div class="row">
+  <div class="stage">
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
+  </div>
+  <div style="min-width:320px;max-width:700px;">
+    <pre id="out">准备就绪。</pre>
+  </div>
+</div>
+
+
+<!-- 结果弹窗（面向演示） -->
+<div id="resultModal">
+  <div>
+    <div>
+      <div>
+        <div class="modal-label">识别完成</div>
+        <div id="modalTitle">-</div>
+        <div id="modalSub"> </div>
+      </div>
+      <button id="btnModalClose" class="ghost" aria-label="close">✕</button>
+    </div>
+    <div>
+      <button id="btnModalMore" class="ghost">查看详细</button>
+      <button id="btnModalOk" class="primary">确定</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {
+  FilesetResolver,
+  PoseLandmarker,
+  HandLandmarker,
+  ObjectDetector,
+  DrawingUtils
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+// ====== CONFIG ======
+const T = 60; // ✅对齐你的训练脚本 T=60
+const INFER_ENDPOINT = "http://127.0.0.1:8001/infer";
+const INFER_INTERVAL_MS = 250;
+
+// ===== Demo 优化（不改模型结构） =====
+const STOP_AFTER_N = 0;          // 0 表示：不提前停止，整段视频播放完再统一判定（演示模式）
+const DECISION_TH = 0.50;        // 0.5：prob_good >= 0.5 认为 GOOD
+const ENABLE_OBJ_IN_VIDEO = true;  // 视频/JSON 演示开启 ObjectDetector（更稳，防误判）
+
+let probHist = [];              // 记录 prob_good（用于平均判定）
+let finalDecided = false;
+ // 推理频率（别每帧打）
+// ===== 性能：限制 MediaPipe 检测频率（否则三模型每帧跑会把播放拖慢） =====
+const MP_INTERVAL_MS  = 100; // Pose+Hand 检测间隔（≈10fps）
+const OBJ_INTERVAL_MS = 200; // Object 检测间隔（≈5fps）
+
+// wasm base (CDN)
+const WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+
+// 模型：建议先用官方云端（最省事）；如果你要离线，把 URL 换成本地 ./models/xxx
+const POSE_TASK_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+const HAND_TASK_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+// ObjectDetector：你已经验证 OK 的 efficientdet_lite0_uint8.tflite
+// 你可以放同目录 ./models/efficientdet_lite0_uint8.tflite 然后改成 "./models/efficientdet_lite0_uint8.tflite"
+const OBJECT_TFLITE_URL = "./models/efficientdet_lite0_uint8.tflite";
+
+// ====== DOM ======
+const $ = (id)=>document.getElementById(id);
+const video = $("video");
+const canvas = $("canvas");
+const ctx = canvas.getContext("2d");
+const out = $("out");
+const stat = $("stat");
+const bufP = $("buf");
+const infP = $("inf");
+const btnStart = $("btnStart");
+const btnStop  = $("btnStop");
+const btnAdv   = $("btnAdv");
+const srcPill = $("srcPill");
+const uiJudge = $("uiJudge");
+const uiInferN = $("uiInferN");
+const uiLastAt = $("uiLastAt");
+const uiStats = $("uiStats");
+const thGood = $("thGood");
+const thBad  = $("thBad");
+const winW   = $("winW");
+const winK   = $("winK");
+const btnCam = $("btnCam");
+const videoFile = $("videoFile");
+const btnChooseVideo = $("btnChooseVideo");
+const fileName = $("fileName");
+const resultModal = $("resultModal");
+const modalTitle = $("modalTitle");
+const modalSub = $("modalSub");
+const btnModalClose = $("btnModalClose");
+const btnModalOk = $("btnModalOk");
+const btnModalMore = $("btnModalMore");
+const jsonFile  = $("jsonFile");
+const btnRunJson = $("btnRunJson");
+
+
+// ====== State ======
+let stream=null, running=false;
+let rafId = 0;
+let vision=null, poseLm=null, handLm=null, objDet=null;
+let drawUtils=null;
+let lastInferAt=0;
+
+// ---- PERF cache/throttle state ----
+let lastPoseHandAt=0, lastObjAt=0;
+let lastPoseRes=null, lastHandRes=null, lastObjRes=null;
+
+
+// --- UI 判定 / 统计 ---
+let lastProbGood = null;
+let win = []; // recent per-infer judge: "GOOD"/"BAD"/"UNCERTAIN"
+let counts = { good:0, bad:0, uncertain:0, total:0 };
+let currentSource = "camera";
+
+let advVisible = false; // 高级设置（阈值/调试）默认隐藏
+
+function showModal(title, sub){
+  try{
+    modalTitle.textContent = title;
+    modalSub.textContent = sub || "";
+    resultModal.style.display = "flex";
+  }catch(_e){}
+}
+function hideModal(){ try{ resultModal.style.display = "none"; }catch(_e){} }
+btnModalClose && btnModalClose.addEventListener("click", hideModal);
+btnModalOk && btnModalOk.addEventListener("click", hideModal);
+btnModalMore && btnModalMore.addEventListener("click", ()=>{ hideModal(); try{ btnAdv.click(); }catch(_e){} });
+
+
+ // camera | video | json
+let inferN = 0;
+let seq = []; // queue of extracted frames (each= D-dim)
+let D = null; // we'll confirm after first extraction
+
+function setStat(txt){ stat.textContent = txt || ""; }
+function formatSourceName(s){
+  if(s==="camera") return "输入源：摄像头";
+  if(s==="video")  return "输入源：视频文件";
+  if(s==="json")   return "输入源：JSON序列";
+  return "输入源："+s;
+}
+function setSource(s){
+  currentSource = s;
+  srcPill.textContent = formatSourceName(s);
+  updateUIForSource();
+}
+function updateUIForSource(){
+  const isCamera = (currentSource==="camera");
+  if(btnCam) btnCam.style.display = isCamera ? "none" : "inline-flex";
+  if(btnChooseVideo) btnChooseVideo.style.display = "inline-flex"; // 始终显示，方便重新选择视频
+  const mbar = $("modelBar");
+  if(mbar) mbar.classList.toggle("dbgHidden", !advVisible);
+}
+
+function getNum(el, fallback){
+  const v = Number(el?.value);
+  return Number.isFinite(v) ? v : fallback;
+}
+function setJudgePill(cls, text){
+  uiJudge.classList.remove("good","bad","uncertain");
+  if(cls) uiJudge.classList.add(cls);
+  uiJudge.textContent = text;
+}
+function incCount(cls){
+  counts.total++;
+  if(cls==="good") counts.good++;
+  else if(cls==="bad") counts.bad++;
+  else counts.uncertain++;
+  uiStats.textContent = `统计: good ${counts.good} / bad ${counts.bad} / uncertain ${counts.uncertain} (total ${counts.total})`;
+}
+function voteJudge(){
+  const W = Math.max(1, Math.min(T, Math.floor(getNum(winW, 15))));
+  const K = Math.max(1, Math.min(W, Math.floor(getNum(winK, 10))));
+  const recent = win.slice(-W);
+  let g=0,b=0,u=0;
+  for(const x of recent){
+    if(x==="GOOD") g++; else if(x==="BAD") b++; else u++;
+  }
+  // 双阈值窗口票选：任一达到 K 票即输出，否则不确定
+  if(g>=K) return {label:"安装电机（GOOD）", cls:"good", detail:`窗口${W}：GOOD票 ${g} >= ${K}`};
+  if(b>=K) return {label:"拆卸电机（BAD）", cls:"bad", detail:`窗口${W}：BAD票 ${b} >= ${K}`};
+  return {label:`窗口${W}：GOOD票${g} / BAD票${b}（未达${K}）`, cls:"uncertain", detail:`窗口${W}：GOOD票${g} / BAD票${b}（未达${K}）`};
+}
+
+
+// ----- utils -----
+function dist2(a,b){
+  const dx=(a.x-b.x), dy=(a.y-b.y);
+  return Math.hypot(dx,dy);
+}
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function resizeCanvasToVideo(){
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+}
+function drawAll(poseRes, handRes, objRes){
+  if(!drawUtils) drawUtils = new DrawingUtils(ctx);
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+  // pose
+  if(poseRes?.landmarks?.length){
+    for(const lm of poseRes.landmarks){
+      drawUtils.drawLandmarks(lm,{radius:2});
+      drawUtils.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS);
+    }
+  }
+  // hands
+  if(handRes?.landmarks?.length){
+    for(const lm of handRes.landmarks){
+      drawUtils.drawLandmarks(lm,{radius:2});
+      drawUtils.drawConnectors(lm, HandLandmarker.HAND_CONNECTIONS);
+    }
+  }
+  // object bbox
+  if(objRes?.detections?.length){
+    ctx.save();
+    ctx.lineWidth=2;
+    ctx.strokeStyle="#00ff88";
+    for(const det of objRes.detections){
+      const bb = det.boundingBox;
+      ctx.strokeRect(bb.originX, bb.originY, bb.width, bb.height);
+    }
+    ctx.restore();
+  }
+}
+
+// ====== extractFeatures：实时复刻你切片训练版的逻辑（核心别乱改） ======
+function extractFeatures(poseRes, handRes, objRes){
+  // pose landmarks 0..32
+  const pl = poseRes?.landmarks?.[0] || null;
+
+  // indices: 11 LS, 12 RS, 13 LE, 14 RE, 15 LW, 16 RW
+  let ls=null, rs=null, lw=null, rw=null;
+  let poseMask=0;
+  let scale=1;
+
+  if(pl && pl.length>=17){
+    poseMask=1;
+    ls=pl[11]; rs=pl[12];
+    lw=pl[15]; rw=pl[16];
+    if(ls && rs) scale = Math.max(1e-6, dist2(ls, rs)); // shoulder width
+  }
+
+  // handedness split (Tasks returns handedness probabilities)
+  let leftHand=null, rightHand=null;
+  let leftScore=0, rightScore=0;
+
+  if(handRes?.landmarks?.length){
+    for(let i=0;i<handRes.landmarks.length;i++){
+      const lm = handRes.landmarks[i];
+      const handed = (handRes.handedness?.[i]?.[0]?.categoryName || "").toLowerCase();
+      const score = handRes.handedness?.[i]?.[0]?.score ?? 0;
+      if(handed.includes("left")){
+        leftHand = lm; leftScore = score;
+      }else if(handed.includes("right")){
+        rightHand = lm; rightScore = score;
+      }else{
+        if(!leftHand){ leftHand = lm; leftScore = score; }
+        else if(!rightHand){ rightHand = lm; rightScore = score; }
+      }
+    }
+  }
+
+  function handFeat(lm){
+    // 0 wrist, 4 thumb_tip, 8 index_tip, 9 middle_mcp, 12 middle_tip, 16 ring_tip, 20 pinky_tip
+    if(!lm || lm.length<21) return { pinch:0, spread:0, curl:0, present:0 };
+    const wrist = lm[0];
+    const midMCP = lm[9];
+    const palm = Math.max(1e-6, dist2(wrist, midMCP));
+    const pinch = dist2(lm[4], lm[8]) / palm;
+    const spread = dist2(lm[8], lm[20]) / palm;
+
+    const tips=[lm[8], lm[12], lm[16], lm[20]];
+    let dsum=0;
+    for(const tip of tips) dsum += dist2(tip, wrist)/palm;
+    const avg = dsum / tips.length; // larger => open
+    const curl = clamp01(1.2 - avg); // heuristic
+
+    return { pinch, spread, curl, present:1 };
+  }
+
+  const LF = handFeat(leftHand);
+  const RF = handFeat(rightHand);
+
+  // object top-1
+  let objMask=0, objCx=0, objCy=0, objW=0, objH=0, objScore=0;
+  if(objRes?.detections?.length){
+    const det = objRes.detections[0];
+    const bb = det.boundingBox;
+    objMask=1;
+    objCx = (bb.originX + bb.width/2) / canvas.width;
+    objCy = (bb.originY + bb.height/2) / canvas.height;
+    objW  = bb.width / canvas.width;
+    objH  = bb.height / canvas.height;
+    objScore = det.categories?.[0]?.score ?? 0;
+  }
+
+  // pose wrist relative to shoulder / shoulderWidth（与你切片版一致的写法）
+  const lwx = (lw ? (lw.x - (ls?.x ?? 0.5))/scale : 0);
+  const lwy = (lw ? (lw.y - (ls?.y ?? 0.5))/scale : 0);
+  const rwx = (rw ? (rw.x - (rs?.x ?? 0.5))/scale : 0);
+  const rwy = (rw ? (rw.y - (rs?.y ?? 0.5))/scale : 0);
+
+  // hand wrist fallback for distance
+  function wristFromHand(lm){
+    return lm && lm[0] ? {x: lm[0].x, y: lm[0].y} : null;
+  }
+  const lwh = wristFromHand(leftHand);
+  const rwh = wristFromHand(rightHand);
+
+  const o = objMask ? {x: objCx, y: objCy} : null;
+  const dlObj = (o && (lw||lwh)) ? dist2(o, lw ? lw : lwh) : 0;
+  const drObj = (o && (rw||rwh)) ? dist2(o, rw ? rw : rwh) : 0;
+
+  // ✅最终特征向量（与切片训练版同顺序/同含义）
+  const feat = [
+    // pose wrist relative (4)
+    lwx, lwy, rwx, rwy,
+
+    // left hand (4)
+    LF.pinch, LF.spread, LF.curl, leftScore,
+
+    // right hand (4)
+    RF.pinch, RF.spread, RF.curl, rightScore,
+
+    // object bbox + score (5)
+    objCx, objCy, objW, objH, objScore,
+
+    // hand-object distance (2)
+    dlObj, drObj,
+
+    // masks (3)
+    poseMask, LF.present, RF.present,
+
+    // obj mask (1)
+    objMask
+  ];
+
+  // enforce fixed dimension (D=23) for LSTM
+  const TARGET_D = 23;
+  if(feat.length < TARGET_D){
+    while(feat.length < TARGET_D) feat.push(0);
+  }else if(feat.length > TARGET_D){
+    feat.length = TARGET_D;
+  }
+
+  return feat;
+}
+
+// ====== init tasks ======
+async function initTasks(){
+  setStat("正在加载模型…");
+  vision = await FilesetResolver.forVisionTasks(WASM_BASE);
+
+  poseLm = await PoseLandmarker.createFromOptions(vision,{
+    baseOptions:{ modelAssetPath: POSE_TASK_URL },
+    runningMode:"VIDEO",
+    numPoses:1
+  });
+
+  handLm = await HandLandmarker.createFromOptions(vision,{
+    baseOptions:{ modelAssetPath: HAND_TASK_URL },
+    runningMode:"VIDEO",
+    numHands:2
+  });
+
+  objDet = await ObjectDetector.createFromOptions(vision,{
+    baseOptions:{ modelAssetPath: OBJECT_TFLITE_URL },
+    runningMode:"VIDEO",
+    scoreThreshold:0.4
+  });
+
+  setStat("就绪");
+}
+
+async function startCamera(){
+  // 摄像头要求：https 或 localhost/127.0.0.1（不要用 file:/// 双击）
+  if(!(window.isSecureContext || location.hostname==="localhost" || location.hostname==="127.0.0.1")){
+    throw new Error("Camera requires https or localhost. Please open via your local web server (http://127.0.0.1:xxxx/...).");
+  }
+  stream = await navigator.mediaDevices.getUserMedia({
+    video:{
+      width:{ ideal:640 },
+      height:{ ideal:480 },
+      frameRate:{ ideal:30, max:30 }
+    },
+    audio:false
+  });
+  video.srcObject = stream;
+  await video.play();
+  resizeCanvasToVideo();
+}
+
+function stopAll(){
+  running=false;
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = 0;
+
+  btnStart.disabled=false;
+  btnStop.disabled=true;
+
+  setStat("已暂停");
+  infP.textContent="infer: -";
+
+  // reset inference state
+  seq=[]; D=null;
+  lastProbGood=null; win=[]; counts={good:0,bad:0,uncertain:0,total:0};
+  uiStats.textContent = `统计: good 0 / bad 0 / uncertain 0`;
+  setJudgePill(null, '-');
+
+  // stop camera
+  try{ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }catch(_e){}
+  // stop video
+  try{ video.pause(); }catch(_e){}
+  try{ video.srcObject=null; }catch(_e){}
+  try{
+    if(video.dataset && video.dataset.objurl){
+      URL.revokeObjectURL(video.dataset.objurl);
+      delete video.dataset.objurl;
+    }
+    video.removeAttribute("src");
+    video.load();
+  }catch(_e){}
+
+  // keep currentSource as-is for display
+  srcPill.textContent = formatSourceName(currentSource);
+}
+
+function finalizeDecision(reason){
+  if(finalDecided) return;
+  if(!probHist.length) return;
+  finalDecided = true;
+  const avg = probHist.reduce((a,b)=>a+b,0)/probHist.length;
+  const isGood = avg >= DECISION_TH;
+  const labelCN = isGood ? "安装电机（GOOD）" : "拆卸电机（BAD）";
+
+  // 演示弹窗：只给老师看"结论"，不堆参数
+  showModal(labelCN, "提示：如需查看概率与阈值，请点击「查看详细」。");
+
+  // 高级设置里仍然保留详细信息（默认隐藏，不影响演示）
+  const detail = `识别结果：${labelCN}（平均 prob_good=${avg.toFixed(3)}，阈值=${DECISION_TH.toFixed(2)}）`;
+  setJudgePill(isGood ? "good" : "bad", detail);
+
+  stat.textContent = `完成：${labelCN}`;
+
+  // 停止播放 + 停止分析
+  running = false;
+  try{ if(video && !video.paused) video.pause(); }catch(_e){}
+  try{ if(rafId) cancelAnimationFrame(rafId); }catch(_e){}
+  btnStart.disabled = false;
+  btnStop.disabled = true;
+  infP.textContent = `infer: done (${reason||"avg"}) avg=${avg.toFixed(3)}`;
+}
+
+async function maybeInfer(){
+  if(seq.length !== T) return;
+
+  const now = Date.now();
+  if(now - lastInferAt < INFER_INTERVAL_MS) return;
+  lastInferAt = now;
+
+  try{
+    const r = await fetch(INFER_ENDPOINT,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ sequence: seq })
+    });
+
+    // 204 no content: treat as "skip"
+    if(r.status === 204){
+      infP.textContent = `infer: (204 no content)`;
+      return;
+    }
+
+    let j = null;
+    try{ j = await r.json(); }catch(_e){
+      infP.textContent = `infer: non-json (status ${r.status})`;
+      return;
+    }
+
+    // ---- 字段对齐（你现在的问题核心在这里）----
+    // 支持 prob_good / p_good / good_prob / prob / score
+    // 若只有 prob_bad，则 prob_good = 1 - prob_bad
+    let p = null;
+    if(j){
+      if(j.prob_good != null) p = Number(j.prob_good);
+      else if(j.p_good != null) p = Number(j.p_good);
+      else if(j.good_prob != null) p = Number(j.good_prob);
+      else if(j.prob != null) p = Number(j.prob);
+      else if(j.score != null) p = Number(j.score);
+      else if(j.prob_bad != null) p = 1 - Number(j.prob_bad);
+    }
+    p = Number.isFinite(p) ? clamp01(p) : 0;
+
+    lastProbGood = p;
+
+    // 记录概率用于 Demo 平均判定
+    if(currentSource !== "camera"){
+      probHist.push(p);
+      // 演示模式：不在中途停播，等整段视频播放结束后再做统一判定
+    }
+
+    inferN++; uiInferN.textContent = `infer# ${inferN}`;
+    uiLastAt.textContent = `最近识别: ${new Date().toLocaleTimeString()}`;
+
+    const THG = DECISION_TH;
+    const THB = DECISION_TH;
+
+    // 简化：单阈值二分类（不再有 UNCERTAIN）
+    let frameLabel = (p >= DECISION_TH) ? "GOOD" : "BAD";
+
+    // 窗口投票稳定
+    win.push(frameLabel);
+    if(win.length > T) win.shift();
+
+    const v = voteJudge();
+    setJudgePill(v.cls, `${v.label}  (prob_good=${p.toFixed(3)}; THG=${THG.toFixed(2)} THB=${THB.toFixed(2)})`);
+    incCount(v.cls);
+
+    // 展示后端 pred（如果有）+ prob_good（我们对齐后）
+    const backendPred = (j && (j.pred ?? j.label ?? j.cls)) ? String(j.pred ?? j.label ?? j.cls) : "-";
+    infP.textContent = `infer: backend=${backendPred}  prob_good=${p.toFixed(3)}  | ${v.detail}`;
+
+  }catch(e){
+    infP.textContent = `infer: failed (server?)`;
+  }
+
+}
+
+function tick(){
+  if(!running) return;
+
+  // 若视频已结束，但还没给出结论：用已有推理的平均值收尾
+  if(currentSource !== "camera" && video && video.ended && !finalDecided && probHist.length){
+    finalizeDecision("ended");
+    return;
+  }
+
+  const ts = performance.now();
+
+  // ---- PERF: throttle heavy detections ----
+  // Pose + Hand (较快) ≈ 10fps
+  if(!lastPoseRes || (ts - lastPoseHandAt) >= MP_INTERVAL_MS){
+    lastPoseRes = poseLm.detectForVideo(video, ts);
+    lastHandRes = handLm.detectForVideo(video, ts);
+    lastPoseHandAt = ts;
+  }
+  // ObjectDetector：视频/JSON 演示默认关闭（更流畅）
+  if((currentSource === "camera") || ENABLE_OBJ_IN_VIDEO){
+    // Object (更慢) ≈ 5fps
+    if(!lastObjRes || (ts - lastObjAt) >= OBJ_INTERVAL_MS){
+      lastObjRes  = objDet.detectForVideo(video, ts);
+      lastObjAt = ts;
+    }
+  }
+
+  // draw uses cached results (smooth playback)
+  drawAll(lastPoseRes, lastHandRes, lastObjRes);
+
+  // Camera mode: only show MediaPipe overlays (no feature buffer / no LSTM infer)
+  if(currentSource === "camera"){
+    rafId = requestAnimationFrame(tick);
+    return;
+  }
+
+  // features: if detection didn't update this frame, we reuse last features
+  const feat = extractFeatures(lastPoseRes, lastHandRes, lastObjRes);
+
+  if(D == null){
+    D = feat.length;
+  }else if(feat.length !== D){
+    // 理论不会发生；发生就清 buffer 重新来
+    seq = [];
+    D = feat.length;
+  }
+
+  seq.push(feat);
+  if(seq.length > T) seq.shift();
+
+  bufP.textContent = `T=60 buffer: ${seq.length}/60 (D=${D ?? "-"})`;
+
+  out.textContent =
+    `D=${D ?? "-"}  buffer=${seq.length}/${T}
+` +
+    `feat[0..7]=[${feat.slice(0,8).map(v=>Number(v).toFixed(4)).join(", ")}]
+` +
+    `note: MediaPipe 检测被限频：Pose/Hand≈${Math.round(1000/MP_INTERVAL_MS)}fps, Object≈${Math.round(1000/OBJ_INTERVAL_MS)}fps（更流畅）`;
+
+  maybeInfer();
+  rafId = requestAnimationFrame(tick);
+}
+
+// ====== Source helpers ======
+function resetPipeline(){
+  probHist = [];
+  finalDecided = false;
+
+  seq=[]; D=null;
+  lastInferAt=0;
+  lastPoseHandAt=0; lastObjAt=0;
+  lastPoseRes=null; lastHandRes=null; lastObjRes=null;
+  lastProbGood=null;
+  win=[]; counts={good:0,bad:0,uncertain:0,total:0};
+  inferN=0; uiInferN.textContent = `infer# 0`; uiLastAt.textContent = `last: -`;
+  uiStats.textContent = `统计: good 0 / bad 0 / uncertain 0`;
+  setJudgePill(null, '-');
+  infP.textContent = "infer: -";
+  bufP.textContent = `T=60 buffer: 0/60`;
+}
+
+async function startVideoFromFile(file){
+  if(!file) return;
+
+  // stop current source (camera etc.) but KEEP video element usable
+  // Note: stopAll() clears video src; we only want to stop camera + analysis here.
+  running=false;
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = 0;
+  try{ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }catch(_e){}
+
+  // set to video mode
+  setSource("video");
+  currentSource="video";
+  srcPill.textContent = formatSourceName("video");
+  btnStart.disabled=false;
+  btnStop.disabled=true;
+  setStat("视频已加载（未开始）");
+
+  // load file into <video> but DO NOT autoplay and DO NOT start analysis
+  try{
+    const url = URL.createObjectURL(file);
+    if(!video.dataset) video.dataset = {};
+    // revoke previous object url if any
+    if(video.dataset.objurl){
+      try{ URL.revokeObjectURL(video.dataset.objurl); }catch(_e){}
+    }
+    video.dataset.objurl = url;
+
+    video.srcObject = null;
+    video.src = url;
+    video.muted = true;
+    video.playsInline = true;
+
+    // wait metadata for size/duration
+    await new Promise((resolve)=>{
+      const onMeta = ()=>{ cleanup(); resolve(); };
+      const onErr  = ()=>{ cleanup(); resolve(); };
+      const cleanup = ()=>{
+        video.removeEventListener("loadedmetadata", onMeta);
+        video.removeEventListener("error", onErr);
+      };
+      video.addEventListener("loadedmetadata", onMeta, { once:true });
+      video.addEventListener("error", onErr, { once:true });
+      // in case it's already available
+      if(video.readyState >= 1){ cleanup(); resolve(); }
+    });
+
+    resizeCanvasToVideo();
+    resetPipeline(); // clear counts/UI, but keep paused
+  }catch(e){
+    console.error(e);
+    out.textContent = "加载视频失败：" + (e?.message || e);
+    setStat("出错");
+  }
+}
+
+async function runJsonFile(file){
+  if(!file) return;
+  // 读 JSON：支持两种格式：
+  // A) { "sequence": [[...D...], ...] }
+  // B) [[...D...], ...]
+  const txt = await file.text();
+  let data = null;
+  try{ data = JSON.parse(txt); }catch(e){
+    out.textContent = "JSON 解析失败：" + (e?.message || e);
+    return;
+  }
+  let frames = null;
+  if(Array.isArray(data)){
+    frames = data;
+  }else if(data && Array.isArray(data.sequence)){
+    frames = data.sequence;
+  }else if(data && Array.isArray(data.frames)){
+    // 兼容你当前的切片格式：{D:23, frames:[{t, feat:[...]} , ...]}
+    frames = data.frames.map(f=>f && Array.isArray(f.feat) ? f.feat : null).filter(Boolean);
+  }
+  if(!frames || !frames.length){
+    out.textContent = "JSON 格式不对：支持 ①[[D],...] ②{sequence:[[D],...]} ③{frames:[{feat:[D]},...]}";
+    return;
+  }
+  // 只跑推理，不跑 mediapipe
+  resetPipeline();
+  currentSource="json";
+  srcPill.textContent = formatSourceName("json");
+  setStat("JSON识别中");
+
+  // 用滑动窗口：每帧移动一步（与你实时模式一致）
+  // 如果你想"每60帧只算一次"，把 step=60 即可
+  const step = 1;
+  const total = frames.length;
+  for(let i=0; i+T <= total; i+=step){
+    seq = frames.slice(i, i+T);
+    D = seq[0]?.length ?? D;
+    bufP.textContent = `T=60 buffer: ${T}/60 (D=${D ?? "-"})  (json idx ${i}..${i+T-1})`;
+    out.textContent = `JSON 推理：窗口 ${i}..${i+T-1} / 总帧 ${total}\n` +
+                      `D=${D}\n` +
+                      `说明：这里与实时一致，是"滑窗推理（step=1）"。如果你要"每60帧只算一次"，把 step 改成 60。`;
+    await maybeInfer();
+    // 给 UI 一点呼吸时间
+    await new Promise(res=>setTimeout(res, 10));
+  }
+  setStat("JSON完成");
+}
+
+// ====== UI ======
+btnStart.addEventListener("click", async ()=>{
+  // If a video file is loaded, Start means: play + start analysis (no autoplay on load)
+  if(currentSource==="video" && (video && (video.src || video.srcObject))){
+    btnStart.disabled=true;
+    btnStop.disabled=false;
+    try{
+      // lazy init tasks only when starting analysis
+      if(!poseLm || !handLm || !objDet) await initTasks();
+      resetPipeline();
+
+      // ensure we have metadata
+      if(video.readyState < 1){
+        await new Promise((resolve)=>{
+          const onMeta = ()=>{ cleanup(); resolve(); };
+          const onErr  = ()=>{ cleanup(); resolve(); };
+          const cleanup = ()=>{
+            video.removeEventListener("loadedmetadata", onMeta);
+            video.removeEventListener("error", onErr);
+          };
+          video.addEventListener("loadedmetadata", onMeta, { once:true });
+          video.addEventListener("error", onErr, { once:true });
+        });
+      }
+      resizeCanvasToVideo();
+
+      // demo: always restart from beginning to avoid short tail re-run
+      try{ video.currentTime = 0; }catch(_e){}
+
+      await video.play();
+      running=true;
+      setStat("视频识别中");
+      if(rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(tick);
+    }catch(e){
+      console.error(e);
+      out.textContent = "ERROR: " + (e?.message || e);
+      setStat("出错");
+      btnStart.disabled=false;
+      btnStop.disabled=true;
+      running=false;
+      try{ video.pause(); }catch(_e){}
+    }
+    return;
+  }
+
+  // Default: start camera mode
+  // switch to camera safely
+  stopAll();
+  setSource("camera");
+
+  btnStart.disabled=true;
+  try{
+    if(!navigator.mediaDevices?.getUserMedia) throw new Error("no camera API");
+    await startCamera();
+    await initTasks();
+    resetPipeline();
+    running=true;
+    currentSource="camera";
+    srcPill.textContent = formatSourceName("camera");
+    btnStop.disabled=false;
+    setStat("摄像头识别中");
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+  }catch(e){
+    console.error(e);
+    out.textContent = "ERROR: " + (e?.message || e) + "提示：请用 http://127.0.0.1 或 http://localhost 打开页面（通过你的 web_server.bat），不要用 file:/// 双击打开。并检查浏览器地址栏的摄像头权限。";
+    setStat("出错");
+    btnStart.disabled=false;
+    btnStop.disabled=true;
+  }
+});
+btnStop.addEventListener("click", ()=>{
+  // Stop analysis; for video keep it loaded and paused.
+  running=false;
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = 0;
+
+  btnStart.disabled=false;
+  btnStop.disabled=true;
+
+  try{ video.pause(); }catch(_e){}
+  setStat(currentSource==="video" ? "ready(video)" : "stopped");
+});
+btnAdv && btnAdv.addEventListener("click", ()=>{
+  advVisible = !advVisible;
+  btnAdv.textContent = advVisible ? "收起设置" : "高级设置";
+  updateUIForSource();
+});
+
+
+// Source switches
+btnCam.addEventListener("click", async ()=>{
+  try{ fileName.textContent = "视频：未选择"; }catch(_e){}
+  currentSource = "camera";
+  setSource(currentSource);
+  // 仅切换到摄像头预览，不自动开始分析
+  try{ await startCamera(); }catch(e){ console.warn(e); }
+  stopAll();
+});
+
+videoFile.addEventListener("change", async (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  try{ fileName.textContent = "视频：" + (f.name || "已选择"); }catch(_e){}
+  currentSource = "video";
+  setSource(currentSource);
+  await startVideoFromFile(f);
+});
+
+btnChooseVideo.addEventListener("click", ()=>{ try{ videoFile.value = ""; }catch(_e){} videoFile.click(); });
+
+jsonFile.addEventListener("change", (e)=>{
+  const f = e.target.files && e.target.files[0];
+  btnRunJson.disabled = !f;
+});
+
+btnRunJson.addEventListener("click", async ()=>{
+  const f = jsonFile.files && jsonFile.files[0];
+  if(!f) return;
+  btnStart.disabled=true; btnStop.disabled=false;
+  running=false; // json runner 不用 tick
+  await runJsonFile(f);
+});
+
+// ⚡ 页面加载完成后立即初始化模型，避免首次使用时等待
+(async function preloadModels() {
+  try {
+    console.log("🚀 开始预加载 MediaPipe 模型...");
+    setStat("正在预加载模型...");
+    await initTasks();
+    console.log("✅ 模型预加载完成");
+    setStat("就绪");
+  } catch(e) {
+    console.warn("⚠️ 模型预加载失败，将在首次使用时加载:", e);
+    setStat("就绪");
+  }
+})();
+
+</script>
+</div>
+</body>
+</html>

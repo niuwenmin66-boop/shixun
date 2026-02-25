@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as echarts from 'echarts';
-import Motor3DModel from './Motor3DModel';
+
 import MotorDismantlingQuiz from './MotorAnimation';
-import MotorDiagnosticSimulator from './MotorDiagnosticSimulator';
+
 import MotorParameterCalculator from './MotorParameterCalculator';
 import MotorStatorInteractive from './MotorStatorInteractive';
+import WaveformInteractive from './WaveformInteractive';
+import Motor3DViewer from './Motor3DViewer';
 
 export default function MotorTheory({ onSelectText }: { onSelectText?: (text: string) => void }) {
   // 展开/折叠状态管理
@@ -13,7 +15,6 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
     goals: true,
     structure: true,
     magneticField: true,
-    workflow: true,
     calculation: true,
     advantages: true,
     resources: true,
@@ -23,11 +24,168 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
   
+  // 文字选中状态
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
+  const [showAskAIButton, setShowAskAIButton] = useState(false);
+  
+  // 放大图片预览状态
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  // 练习题目状态
+  const [exerciseAnswers, setExerciseAnswers] = useState({
+    q1: '',
+    q2: '',
+    q3: ''
+  });
+  
+  // 练习结果状态
+  const [exerciseResults, setExerciseResults] = useState({
+    q1: null as boolean | null,
+    q2: null as boolean | null,
+    q3: null as boolean | null
+  });
+  
+  // 容器引用
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 文字选中事件处理
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        setShowAskAIButton(false);
+        return;
+      }
+      
+      const text = selection.toString().trim();
+      if (text.length < 5) {
+        setShowAskAIButton(false);
+        return;
+      }
+      
+      setSelectedText(text);
+      
+      // 计算选中区域的位置
+      const range = selection.getRangeAt(0);
+      
+      if (containerRef.current) {
+        // 获取容器的位置和尺寸
+        const containerRect = containerRef.current.getBoundingClientRect();
+        
+        // 获取整个选中区域的位置
+        const selectionRect = range.getBoundingClientRect();
+        
+        // 计算最后一个字的位置
+        // 创建一个新的范围，只包含最后一个字
+        const lastCharRange = document.createRange();
+        const lastCharOffset = range.endOffset - 1;
+        if (lastCharOffset >= 0) {
+          lastCharRange.setStart(range.endContainer, lastCharOffset);
+          lastCharRange.setEnd(range.endContainer, range.endOffset);
+        } else {
+          lastCharRange.setStart(range.endContainer, 0);
+          lastCharRange.setEnd(range.endContainer, 1);
+        }
+        
+        // 获取最后一个字的位置
+        const lastCharRect = lastCharRange.getBoundingClientRect();
+        
+        // 计算按钮位置：最后一个字的下方行，中线对齐
+        const buttonWidth = 80; // 按钮宽度
+        const buttonHeight = 32; // 按钮高度
+        
+        // 计算相对于容器的位置
+        let x = (lastCharRect.left - containerRect.left) + (lastCharRect.width / 2) - (buttonWidth / 2);
+        let y = (lastCharRect.bottom - containerRect.top) + containerRef.current.scrollTop + 15; // 下方行，增加一些间距，加上滚动偏移量
+        
+        // 边界检查，确保按钮不会被容器边框压住
+        const containerWidth = containerRect.width;
+        const containerHeight = containerRect.height;
+        
+        // 水平边界检查
+        if (x < 10) {
+          x = 10;
+        } else if (x + buttonWidth > containerWidth - 10) {
+          x = containerWidth - buttonWidth - 10;
+        }
+        
+        // 垂直边界检查
+        if (y + buttonHeight > containerHeight - 10 + containerRef.current.scrollTop) {
+          // 如果按钮会超出容器底部，调整位置到选中区域的上方
+          y = (selectionRect.top - containerRect.top) + containerRef.current.scrollTop - buttonHeight - 15;
+          // 确保按钮不会超出容器顶部
+          if (y < 10 + containerRef.current.scrollTop) {
+            y = 10 + containerRef.current.scrollTop;
+          }
+        }
+        
+        setSelectionPosition({ x, y });
+        setShowAskAIButton(true);
+      }
+    };
+    
+    window.addEventListener('mouseup', handleSelection);
+    window.addEventListener('touchend', handleSelection);
+    
+    return () => {
+      window.removeEventListener('mouseup', handleSelection);
+      window.removeEventListener('touchend', handleSelection);
+    };
+  }, []);
+  
+  // 问问AI按钮点击事件
+  const handleAskAI = () => {
+    if (selectedText && onSelectText) {
+      onSelectText(selectedText);
+    }
+    setShowAskAIButton(false);
+  };
+  
   // 切换章节展开/折叠
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
+    }));
+  };
+  
+  // 处理练习答案提交
+  const handleExerciseSubmit = (questionId: string, answer: string) => {
+    // 更新答案状态
+    setExerciseAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+    
+    // 判断答案是否正确
+    let isCorrect = false;
+    switch (questionId) {
+      case 'q1':
+        isCorrect = answer === 'q1c'; // 120°
+        break;
+      case 'q2':
+        isCorrect = answer === 'q2a'; // 正确
+        break;
+      case 'q3':
+        isCorrect = answer.toLowerCase() === '60f/p' || answer.toLowerCase() === '60*f/p' || answer.toLowerCase() === '60f÷p'; // 60f/p
+        break;
+      default:
+        isCorrect = false;
+    }
+    
+    // 更新结果状态
+    setExerciseResults(prev => ({
+      ...prev,
+      [questionId]: isCorrect
+    }));
+  };
+  
+  // 处理填空题输入变化
+  const handleFillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExerciseAnswers(prev => ({
+      ...prev,
+      q3: e.target.value
     }));
   };
   
@@ -202,7 +360,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
   }, []);
 
   return (
-    <div className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-full overflow-y-auto">
+    <div ref={containerRef} className="bg-white rounded-[16px] shadow-[0_8px_24px_rgba(255,143,163,0.12)] p-6 h-full overflow-y-auto relative">
       {/* 标题 */}
       <h1 className="text-lg font-semibold mb-6 text-[var(--text-primary)] border-b border-[var(--light-pink)] pb-3">
         交流异步电机的结构与工作原理
@@ -226,15 +384,12 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="rounded-lg p-4">
-              <p className="mb-3 text-[var(--text-primary)]">通过本课学习，应能够：</p>
-              <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2">
+            <p className="mb-3 text-[var(--text-primary)]">通过本课学习，应能够：</p>
+            <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2">
                 <li>说出交流异步电机的基本结构组成</li>
                 <li>理解旋转磁场的产生原理</li>
-                <li>分析异步电机的工作过程</li>
                 <li>初步理解在新能源汽车中的应用意义</li>
               </ul>
-            </div>
           </motion.div>
         )}
       </div>
@@ -258,7 +413,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             className="pl-1"
           >
             {/* 定子结构 */}
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-cog text-[var(--brand-pink)] mr-2"></i>定子（Stator）</h3>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
@@ -274,11 +429,35 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                   </ul>
                 </div>
                 <div className="w-1/3">
-                  <img 
-                    src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
-                    alt="真实定子结构" 
-                    className="w-full h-auto rounded-lg object-cover"
-                  />
+                  <div className="relative rounded-lg overflow-hidden cursor-pointer">
+                    <img 
+                      src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
+                      alt="真实定子结构" 
+                      className="w-full h-auto rounded-lg object-cover hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd");
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectText) {
+                            onSelectText(`[图片]https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20stator%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -289,7 +468,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             </div>
             
             {/* 转子结构 */}
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-cog text-[var(--brand-pink)] mr-2"></i>转子（Rotor）</h3>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
@@ -302,12 +481,44 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
                   </ul>
                 </div>
                 <div className="w-1/3">
-                  <img 
-                    src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
-                    alt="真实转子结构" 
-                    className="w-full h-auto rounded-lg object-cover"
-                  />
+                  <div className="relative rounded-lg overflow-hidden cursor-pointer">
+                    <img 
+                      src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd" 
+                      alt="真实转子结构" 
+                      className="w-full h-auto rounded-lg object-cover hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd");
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-search-plus"></i>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectText) {
+                            onSelectText(`[图片]https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real%20AC%20motor%20rotor%20structure%2C%20with%20core%20and%20windings%2C%20technical%20photograph%2C%20clear%20details%2C%20white%20background&image_size=square_hd`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+            
+            {/* 3D资源 */}
+            <div className="mb-4">
+              <div className="bg-[var(--bg-primary)] rounded-lg p-4 border border-[var(--light-pink)]">
+                <h3 className="font-medium mb-3 text-[var(--text-primary)]">交流感应电动机 绕线式-转子3D模型</h3>
+                <Motor3DViewer />
               </div>
             </div>
           </motion.div>
@@ -332,124 +543,56 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="bg-[var(--bg-primary)] rounded-lg p-4 mb-4">
-              <p className="mb-4 text-[var(--text-secondary)] leading-relaxed">
-                三相定子绕组通入相位差120°的交流电，形成空间上依次相差120°的脉振磁场，合成后得到幅值恒定、匀速旋转的合成磁场，其同步转速n₁=60f/p。
-              </p>
-              <div className="bg-white rounded-lg p-3 border border-[var(--light-pink)]">
-                <p className="text-[var(--text-primary)] font-medium mb-2">形象理解：</p>
-                <p className="text-[var(--text-secondary)] leading-relaxed">
-                  想象三个人轮流拍手：<br/>
-                  1. 三相电就像三位节拍不同的鼓手，A、B、C 各相差"一拍"（120°）。<br/>
-                  2. 定子绕组是三组"线圈鼓"，通电后各自产生一个小磁场。<br/>
-                  3. 因为三人节拍错开，小磁场像接力棒一样"你追我赶"，合成一个原地打转的大磁场——这就是"旋转磁场"。<br/>
-                  4. 转速只由电源频率和电机极对数决定，跟转子有没有动无关，所以叫"同步转速"。<br/>
-                  5. 转子像坐在旋转木马外的孩子，被转动的磁场"牵着跑"，但又永远追不上，于是形成"异步"。
-                </p>
-                <p className="mt-3 text-[var(--text-secondary)] font-medium italic">
-                  一句话：三相电"轮流拍手"，定子里就转起了"隐形拨浪盘"，隔空推着转子转。
+            <div className="flex gap-4 mb-4">
+              <div className="flex-1">
+                <p className="text-[var(--text-primary)] leading-relaxed">
+                  三相定子绕组通入相位差120°的交流电，形成空间上依次相差120°的脉振磁场，合成后得到幅值恒定、匀速旋转的合成磁场，其同步转速n₁=60f/p。
                 </p>
               </div>
+              <div className="w-1/3">
+                <div className="relative rounded-lg overflow-hidden cursor-pointer">
+                  <img 
+                    src="https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424" 
+                    alt="旋转磁场产生原理" 
+                    className="w-full h-auto rounded-lg object-cover hover:opacity-90 transition-opacity"
+                  />
+                  <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center space-x-8">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage("https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424");
+                      }}
+                      className="text-white text-2xl hover:text-white/80 transition-colors"
+                    >
+                      <i className="fa-solid fa-search-plus"></i>
+                    </button>
+                    <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectText) {
+                            onSelectText(`[图片]https://e.necibook.com/api/media/api/v1/media/showImage/2022488447462375424`);
+                          }
+                        }}
+                        className="text-white text-2xl hover:text-white/80 transition-colors"
+                      >
+                        <i className="fa-solid fa-robot"></i>
+                      </button>
+                  </div>
+                </div>
+              </div>
             </div>
+            
+            {/* 三相电流波形模拟器 */}
+            <div className="mt-6">
+              <WaveformInteractive />
+            </div>
+
           </motion.div>
         )}
       </div>
 
-      {/* 电机工作过程流程 */}
-      <div className="mb-6">
-        <button
-          onClick={() => toggleSection('workflow')}
-          className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
-        >
-          <span>电机工作过程流程</span>
-          <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.workflow ? 'transform rotate-180' : ''}`}></i>
-        </button>
-        
-        {expandedSections.workflow && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="pl-1"
-          >
-            <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-              <ol className="space-y-4 text-[var(--text-secondary)]">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">1</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">上电自检</h4>
-                    <p>主控 MCU 检测母线电压、相电流采样、温度传感器与旋变信号，全部正常后进入待机。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">2</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">启机预充</h4>
-                    <p>闭合预充继电器，通过 PTC 电阻将直流母线电容电压缓慢抬升至电池电压 95%，随后吸合主正继电器，切除预充。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">3</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">转速指令解析</h4>
-                    <p>VCU 通过 CAN 发送目标转速 n* 与转矩 T*；MCU 依据当前转子实际转速 n 计算滑差 s = (n₁−n)/n₁，并查表得到最佳滑差-转矩曲线。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">4</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">SVPWM 调制</h4>
-                    <p>根据目标转矩查弱磁/最大转矩电流比（MTPA）表，得到 id、iq；经 Park 逆变换得到三相电流参考 ia、ib、ic；通过 SVPWM 生成六路 PWM 占空比，驱动 IGBT 三相桥。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">5</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">功率驱动</h4>
-                    <p>IGBT 将直流母线电压斩波成三相正弦 PWM 波，经滤波电感后形成近似正弦的相电流，注入定子绕组，产生旋转磁场。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">6</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">转子感应与转矩输出</h4>
-                    <p>旋转磁场切割转子导条，感应出滑差频率的转子电流；该电流与气隙磁场作用产生异步转矩，驱动转子跟随磁场旋转，实现机电能量转换。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">7</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">闭环监控</h4>
-                    <p>双环 PI：转速环 1 kHz 刷新，电流环 10 kHz 刷新；实时比较 n 与 n*，动态调整 iq，抑制负载扰动；同步监测温度、电流、电压，触发降额或故障保护。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">8</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">能量回收</h4>
-                    <p>当 VCU 请求制动，MCU 将 iq 设为负值，电机进入发电状态，母线电压泵升至电池允许上限后，通过 Buck-Boost 回馈能量至电池，实现制动能量回收。</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--brand-pink)] text-white flex items-center justify-center font-medium">9</span>
-                  <div>
-                    <h4 className="font-medium text-[var(--text-primary)] mb-1">下电流程</h4>
-                    <p>转速降至 50 rpm 以下，断开主正继电器，电容放电至 &lt;60 V，MCU 进入休眠，完成一次完整的"电子工作过程"。</p>
-                  </div>
-                </li>
-              </ol>
-            </div>
-          </motion.div>
-        )}
-      </div>
 
-      {/* 交流异步电机拆卸步骤排序 */}
-      <div className="mb-6">
-        <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-          <MotorDismantlingQuiz />
-        </div>
-      </div>
+
 
       {/* 异步电机参数计算 */}
       <div className="mb-6">
@@ -469,7 +612,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-calculator text-[var(--brand-pink)] mr-2"></i>介绍计算方式</h3>
               <p className="mb-3 text-[var(--text-primary)] leading-relaxed">异步电机的参数计算主要基于其基本结构和工作原理。常用的计算方式包括：</p>
               <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2">
@@ -479,7 +622,7 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
               </ul>
             </div>
             
-            <div className="rounded-lg p-4 mb-4">
+            <div className="mb-4">
               <h3 className="font-medium mb-3 flex items-center text-[var(--text-primary)]"><i className="fa-solid fa-chart-line text-[var(--brand-pink)] mr-2"></i>电机转差率与性能关系</h3>
               <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)]">
                 <div ref={chartRef} className="h-80 w-full"></div>
@@ -512,24 +655,59 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             className="pl-1"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-                <h3 className="text-md font-medium mb-3 text-[var(--text-primary)]">优势</h3>
-                <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-2">
-                  <li>结构简单：无永磁体，制造与维护成本低</li>
-                  <li>成本低廉：原材料易得，供应链成熟</li>
-                  <li>可靠性高：耐高温、抗退磁，寿命长</li>
-                  <li>高速弱磁区宽：易于实现宽速恒功率运行</li>
-                  <li>免永磁体：规避稀土资源风险与价格波动</li>
+              {/* 优势卡片 */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-md font-semibold mb-3 text-green-700 flex items-center">
+                  <i className="fa-solid fa-plus-circle text-green-500 mr-2"></i>
+                  优势
+                </h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">结构简单：无永磁体，制造与维护成本低</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">成本低廉：原材料易得，供应链成熟</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">可靠性高：耐高温、抗退磁，寿命长</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">高速弱磁区宽：易于实现宽速恒功率运行</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">免永磁体：规避稀土资源风险与价格波动</span>
+                  </li>
                 </ul>
               </div>
               
-              <div className="bg-[var(--bg-primary)] rounded-lg p-4">
-                <h3 className="text-md font-medium mb-3 text-[var(--text-primary)]">劣势</h3>
-                <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-2">
-                  <li>低速效率偏低：励磁电流大，铜耗占比高</li>
-                  <li>需无功励磁：增加逆变器容量与损耗</li>
-                  <li>功率密度与转矩密度不及永磁机：同体积输出偏小</li>
-                  <li>控制器算法复杂：需精确滑差估算与转子参数辨识</li>
+              {/* 劣势卡片 */}
+              <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 border border-red-100 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-md font-semibold mb-3 text-red-700 flex items-center">
+                  <i className="fa-solid fa-minus-circle text-red-500 mr-2"></i>
+                  劣势
+                </h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">低速效率偏低：励磁电流大，铜耗占比高</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">需无功励磁：增加逆变器容量与损耗</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">功率密度与转矩密度不及永磁机：同体积输出偏小</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2 mt-1">•</span>
+                    <span className="text-[var(--text-primary)]">控制器算法复杂：需精确滑差估算与转子参数辨识</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -537,13 +715,13 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
         )}
       </div>
 
-      {/* 学习资源 */}
+      {/* 小练习 */}
       <div className="mb-6">
         <button
           onClick={() => toggleSection('resources')}
           className="w-full flex items-center justify-between text-lg font-medium mb-3 text-[var(--text-primary)]"
         >
-          <span>学习资源</span>
+          <span>小练习</span>
           <i className={`fa-solid fa-chevron-down transition-transform duration-200 ${expandedSections.resources ? 'transform rotate-180' : ''}`}></i>
         </button>
         
@@ -555,23 +733,166 @@ export default function MotorTheory({ onSelectText }: { onSelectText?: (text: st
             transition={{ duration: 0.3 }}
             className="pl-1"
           >
-            <div className="grid grid-cols-1 gap-4">
-              {/* 资源1：电机结构3D模型 */}
-              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <Motor3DModel />
+            <div className="grid grid-cols-1 gap-6">
+              {/* 练习1：选择题 */}
+              <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)] shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="font-medium mb-3 text-[var(--text-primary)] flex items-center">
+                  <span className="bg-[var(--brand-pink)] text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">1</span>
+                  选择题：交流异步电机的定子绕组通入相位差多少度的交流电，才能产生旋转磁场？
+                </h4>
+                <div className="space-y-2">
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1a' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1a" className="mr-2" checked={exerciseAnswers.q1 === 'q1a'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1a' }))} />
+                    <label htmlFor="q1a" className="text-[var(--text-primary)]">60°</label>
+                  </div>
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1b' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1b" className="mr-2" checked={exerciseAnswers.q1 === 'q1b'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1b' }))} />
+                    <label htmlFor="q1b" className="text-[var(--text-primary)]">90°</label>
+                  </div>
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1c' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1c" className="mr-2" checked={exerciseAnswers.q1 === 'q1c'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1c' }))} />
+                    <label htmlFor="q1c" className="text-[var(--text-primary)]">120°</label>
+                  </div>
+                  <div className={`flex items-center p-2 rounded-lg cursor-pointer ${exerciseAnswers.q1 === 'q1d' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q1" id="q1d" className="mr-2" checked={exerciseAnswers.q1 === 'q1d'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q1: 'q1d' }))} />
+                    <label htmlFor="q1d" className="text-[var(--text-primary)]">180°</label>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-[var(--light-pink)]">
+                  <button 
+                    className="px-4 py-2 bg-[var(--brand-pink)] text-white rounded-lg hover:bg-[var(--brand-pink)]/90 transition-colors text-sm"
+                    onClick={() => handleExerciseSubmit('q1', exerciseAnswers.q1)}
+                    disabled={!exerciseAnswers.q1}
+                  >
+                    提交答案
+                  </button>
+                  {exerciseResults.q1 !== null && (
+                    <div className={`mt-2 p-2 rounded-lg ${exerciseResults.q1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {exerciseResults.q1 ? '回答正确！' : '回答错误，正确答案是：120°'}
+                    </div>
+                  )}
+                </div>
               </div>
               
-
-              {/* 资源3：故障诊断模拟器 */}
-              <div className="bg-white border border-[var(--light-pink)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <MotorDiagnosticSimulator />
+              {/* 练习2：判断题 */}
+              <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)] shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="font-medium mb-3 text-[var(--text-primary)] flex items-center">
+                  <span className="bg-[var(--brand-pink)] text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">2</span>
+                  判断题：异步电机的转子转速总是低于同步转速。
+                </h4>
+                <div className="flex space-x-4">
+                  <div className={`flex items-center p-3 rounded-lg cursor-pointer ${exerciseAnswers.q2 === 'q2a' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q2" id="q2a" className="mr-2" checked={exerciseAnswers.q2 === 'q2a'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q2: 'q2a' }))} />
+                    <label htmlFor="q2a" className="text-[var(--text-primary)]">正确</label>
+                  </div>
+                  <div className={`flex items-center p-3 rounded-lg cursor-pointer ${exerciseAnswers.q2 === 'q2b' ? 'bg-[var(--bg-primary)]/50' : 'hover:bg-[var(--bg-primary)]/30'}`}>
+                    <input type="radio" name="q2" id="q2b" className="mr-2" checked={exerciseAnswers.q2 === 'q2b'} onChange={() => setExerciseAnswers(prev => ({ ...prev, q2: 'q2b' }))} />
+                    <label htmlFor="q2b" className="text-[var(--text-primary)]">错误</label>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-[var(--light-pink)]">
+                  <button 
+                    className="px-4 py-2 bg-[var(--brand-pink)] text-white rounded-lg hover:bg-[var(--brand-pink)]/90 transition-colors text-sm"
+                    onClick={() => handleExerciseSubmit('q2', exerciseAnswers.q2)}
+                    disabled={!exerciseAnswers.q2}
+                  >
+                    提交答案
+                  </button>
+                  {exerciseResults.q2 !== null && (
+                    <div className={`mt-2 p-2 rounded-lg ${exerciseResults.q2 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {exerciseResults.q2 ? '回答正确！' : '回答错误，正确答案是：正确'}
+                    </div>
+                  )}
+                </div>
               </div>
               
-
+              {/* 练习3：填空题 */}
+              <div className="bg-white rounded-lg p-4 border border-[var(--light-pink)] shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="font-medium mb-3 text-[var(--text-primary)] flex items-center">
+                  <span className="bg-[var(--brand-pink)] text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">3</span>
+                  填空题：同步转速的计算公式是 n₁ = ______，其中 f 为电源频率，p 为电机极对数。
+                </h4>
+                <div className="mb-3">
+                  <input 
+                    type="text" 
+                    className="w-full p-2 border border-[var(--light-pink)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--brand-pink)]"
+                    placeholder="请输入答案"
+                    value={exerciseAnswers.q3}
+                    onChange={handleFillInputChange}
+                  />
+                </div>
+                <div className="mt-3 pt-3 border-t border-[var(--light-pink)]">
+                  <button 
+                    className="px-4 py-2 bg-[var(--brand-pink)] text-white rounded-lg hover:bg-[var(--brand-pink)]/90 transition-colors text-sm"
+                    onClick={() => handleExerciseSubmit('q3', exerciseAnswers.q3)}
+                    disabled={!exerciseAnswers.q3.trim()}
+                  >
+                    提交答案
+                  </button>
+                  {exerciseResults.q3 !== null && (
+                    <div className={`mt-2 p-2 rounded-lg ${exerciseResults.q3 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {exerciseResults.q3 ? '回答正确！' : '回答错误，正确答案是：60f/p'}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
       </div>
+      
+      {/* 问问AI按钮 */}
+      {showAskAIButton && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="absolute z-40"
+          style={{
+            left: `${selectionPosition.x}px`,
+            top: `${selectionPosition.y}px`
+          }}
+        >
+          <button
+            onClick={handleAskAI}
+            className="bg-[var(--brand-pink)] text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors flex items-center text-sm whitespace-nowrap min-w-[80px] justify-center"
+          >
+            <i className="fa-solid fa-robot mr-1"></i>
+            问问AI
+          </button>
+        </motion.div>
+      )}
+      
+      {/* 图片预览模态框 */}
+      {selectedImage && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+            className="relative max-w-4xl max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={selectedImage} 
+              alt="放大图片" 
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors"
+            >
+              <i className="fa-solid fa-times text-xl"></i>
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

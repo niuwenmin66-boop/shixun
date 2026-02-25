@@ -29,8 +29,8 @@ export default function CourseCatalog({ onContentSelect }: { onContentSelect?: (
           id: 'task-7-3',
           title: '任务三 交流异步电机拆卸',
           subItems: [
-            { id: 'theory-7-3', title: '教材学习' },
-            { id: 'training-7-3', title: '实训指导', isActive: true },
+            { id: 'theory-7-3', title: '教材学习', isActive: true },
+            { id: 'training-7-3', title: '实训指导' },
           ],
         },
       ],

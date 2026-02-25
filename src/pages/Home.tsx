@@ -24,7 +24,7 @@ export default function Home() {
   const [selectedText, setSelectedText] = useState<string>('');
   
   // 选中的课程内容
-  const [selectedContent, setSelectedContent] = useState<CourseContentType>('training');
+  const [selectedContent, setSelectedContent] = useState<CourseContentType>('theory');
 
   // Tab配置
   const tabs = [
@@ -73,10 +73,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
-      {/* 顶部Tab导航 */}
-      <div className="sticky top-0 z-10 py-4 px-3 backdrop-blur-sm bg-[var(--bg-primary)]/90">
-        <div className="flex justify-center">
-          <div className="flex bg-white/60 p-2 rounded-full shadow-sm">
+      {/* 顶部课程标题和返回按钮 */}
+      <div className="sticky top-0 z-20 py-4 px-6 backdrop-blur-sm bg-[var(--bg-primary)]/90 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <motion.button
+            onClick={() => window.location.href = '/'}
+            className="text-[var(--text-primary)] hover:text-[var(--brand-pink)] transition-colors"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <i className="fa-solid fa-arrow-left text-xl"></i>
+          </motion.button>
+          <h1 className="text-lg font-semibold text-[var(--text-primary)]">新能源汽车动力系统与维护</h1>
+        </div>
+        
+        {/* 居中的Tab导航 */}
+        <div className="absolute left-0 right-0 flex justify-center pointer-events-none">
+          <div className="flex bg-white/60 p-2 rounded-full shadow-sm pointer-events-auto">
             {tabs.map((tab) => (
               <motion.button
                 key={tab.id}
@@ -95,10 +108,13 @@ export default function Home() {
             ))}
           </div>
         </div>
+        
+        {/* 占位元素，保持标题和返回按钮与Tab导航对齐 */}
+        <div className="w-64"></div>
       </div>
 
       {/* 主内容区域 */}
-      <div className="px-3">
+      <div className="px-6 pt-4">
         {renderTabContent()}
       </div>
     </div>
