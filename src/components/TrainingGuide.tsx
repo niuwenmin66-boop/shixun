@@ -344,7 +344,6 @@ export default function TrainingGuide({ onSelectText }: { onSelectText?: (text: 
                 <div className="flex-1 relative rounded-lg overflow-hidden">
                   <video 
                     src="https://e.necibook.com/api/media/api/v1/media/showImage/2021466316601610240" 
-                    alt="实训场景" 
                     className="w-full h-auto object-cover hover:opacity-90 transition-opacity"
                     controls
                     muted
