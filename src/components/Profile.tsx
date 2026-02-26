@@ -12,6 +12,8 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import AIAssistant from './AIAssistant';
 import {
   SkillGraph,
   SkillFilter,
@@ -85,6 +87,10 @@ export default function Profile() {
     setShowLinkPreview(false);
   }, []);
 
+  // AI小助手展开/收起状态
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+
   return (
     <div className="p-6 h-[calc(100vh-100px)] max-w-7xl mx-auto">
       {/* 学习概况数据区 */}
@@ -144,6 +150,34 @@ export default function Profile() {
         isOpen={showLinkPreview}
         onClose={closeResourcePreview}
       />
+
+      {/* AI实训小助手入口 */}
+      <div className="fixed bottom-6 right-12 z-40">
+        {/* 展开/收起按钮 */}
+        <motion.button
+          onClick={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
+          className="bg-[var(--brand-pink)] text-white p-4 rounded-full shadow-lg hover:bg-[var(--brand-pink)]/90 transition-colors z-50"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          style={{ position: 'absolute', bottom: 0, right: 0 }}
+        >
+          <i className={`fa-solid ${isAIAssistantOpen ? 'fa-times' : 'fa-robot'} text-xl`}></i>
+        </motion.button>
+        
+        {/* AI小助手面板 */}
+        {isAIAssistantOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-lg shadow-xl w-80 h-[calc(100vh-120px)] overflow-hidden"
+            style={{ position: 'absolute', bottom: '70px', right: 0 }}
+          >
+            <AIAssistant selectedText={selectedText} />
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

@@ -161,7 +161,9 @@ export default function TrainingProject() {
             </div>
             <div className="bg-gray-100 rounded-lg overflow-hidden mb-1 flex-grow">
               <iframe 
-                src={currentResource.htmlPath ? encodeURI(currentResource.htmlPath) : "/demo_three_views_IMU_POSE (2).html"} 
+                src={currentResource.id === 6 
+                  ? 'http://localhost:8001/yolo_person_demo_like_realtime.html' 
+                  : (currentResource.htmlPath ? encodeURI(currentResource.htmlPath) : "/demo_three_views_IMU_POSE (2).html")} 
                 className="w-full h-full"
                 title={currentResource.title}
               ></iframe>
